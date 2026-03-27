@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "afNd+f4+udU=",
+  "dgSpecHash": "COTQ3OLZX/E=",
   "success": true,
-  "projectFilePath": "C:\\Users\\name\\Documents\\Lab2\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
+  "projectFilePath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\name\\.nuget\\packages\\coverlet.collector\\6.0.4\\coverlet.collector.6.0.4.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",

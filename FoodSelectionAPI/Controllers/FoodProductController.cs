@@ -30,6 +30,8 @@ public class FoodProductController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<FoodProductResponseDto>> GetById(string id)
     {
+        if (!ObjectId.TryParse(id, out var objectId))
+            return BadRequest("Некорретный формат!");
         var product = await _foodProductService.GetByIdAsync(id);
         return product == null ? NotFound($"Продукт с ID {id} не найден") : Ok(product);
     }
@@ -39,7 +41,6 @@ public class FoodProductController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
         var result = await _foodProductService.CreateAsync(createDto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
@@ -49,6 +50,8 @@ public class FoodProductController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+        if (!ObjectId.TryParse(id, out var objectId))
+            return BadRequest("Некорретный формат!");
 
         var result = await _foodProductService.UpdateAsync(id, updateDto);
         return result ? NoContent() : NotFound($"Продукт с ID {id} не найден");
@@ -57,6 +60,8 @@ public class FoodProductController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
+        if (!ObjectId.TryParse(id, out var objectId))
+            return BadRequest("Некорретный формат!");
 
         var result = await _foodProductService.DeleteAsync(id);
         return result ? Ok(new { message = "Продукт успешно удален" }) : NotFound($"Продукт с ID {id} не найден");
