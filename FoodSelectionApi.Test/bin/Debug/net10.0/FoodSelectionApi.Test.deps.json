@@ -16,11 +16,30 @@
           "FoodSelectionApi.Test.dll": {}
         }
       },
+      "App.Metrics.Abstractions/4.3.0": {
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "1.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/App.Metrics.Abstractions.dll": {
+            "assemblyVersion": "4.3.0.0",
+            "fileVersion": "4.3.0.0"
+          }
+        }
+      },
       "DnsClient/1.6.1": {
         "runtime": {
           "lib/net5.0/DnsClient.dll": {
             "assemblyVersion": "1.6.1.0",
             "fileVersion": "1.6.1.0"
+          }
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "4.700.19.46214"
           }
         }
       },
@@ -320,6 +339,58 @@
           }
         }
       },
+      "OpenTelemetry/1.15.1": {
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.15.1"
+        },
+        "runtime": {
+          "lib/net10.0/OpenTelemetry.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.1.1988"
+          }
+        }
+      },
+      "OpenTelemetry.Api/1.15.1": {
+        "runtime": {
+          "lib/net10.0/OpenTelemetry.Api.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.1.1988"
+          }
+        }
+      },
+      "OpenTelemetry.Api.ProviderBuilderExtensions/1.15.1": {
+        "dependencies": {
+          "OpenTelemetry.Api": "1.15.1"
+        },
+        "runtime": {
+          "lib/net10.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.1.1988"
+          }
+        }
+      },
+      "OpenTelemetry.Exporter.Prometheus.AspNetCore/1.15.1-beta.1": {
+        "dependencies": {
+          "OpenTelemetry": "1.15.1"
+        },
+        "runtime": {
+          "lib/net10.0/OpenTelemetry.Exporter.Prometheus.AspNetCore.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.1.1989"
+          }
+        }
+      },
+      "OpenTelemetry.Extensions.Hosting/1.15.1": {
+        "dependencies": {
+          "OpenTelemetry": "1.15.1"
+        },
+        "runtime": {
+          "lib/net10.0/OpenTelemetry.Extensions.Hosting.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.15.1.1988"
+          }
+        }
+      },
       "SharpCompress/0.30.1": {
         "runtime": {
           "lib/net5.0/SharpCompress.dll": {
@@ -433,7 +504,10 @@
       },
       "FoodSelection/1.0.0": {
         "dependencies": {
+          "App.Metrics.Abstractions": "4.3.0",
           "MongoDB.Driver": "3.6.0",
+          "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.15.1-beta.1",
+          "OpenTelemetry.Extensions.Hosting": "1.15.1",
           "Swashbuckle.AspNetCore": "6.6.2"
         },
         "runtime": {
@@ -451,12 +525,26 @@
       "serviceable": false,
       "sha512": ""
     },
+    "App.Metrics.Abstractions/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ekSlyVgN6foN6rmwVmRGBr0j5ufgRPsO5f7Md2fc3q44vkBNYpjsRLiUQsIXCSVI3NHorkrZh8aL4eRcLkVDGw==",
+      "path": "app.metrics.abstractions/4.3.0",
+      "hashPath": "app.metrics.abstractions.4.3.0.nupkg.sha512"
+    },
     "DnsClient/1.6.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-4H/f2uYJOZ+YObZjpY9ABrKZI+JNw3uizp6oMzTXwDw6F+2qIPhpRl/1t68O/6e98+vqNiYGu+lswmwdYUy3gg==",
       "path": "dnsclient/1.6.1",
       "hashPath": "dnsclient.1.6.1.nupkg.sha512"
+    },
+    "Microsoft.Bcl.AsyncInterfaces/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-K63Y4hORbBcKLWH5wnKgzyn7TOfYzevIEwIedQHBIkmkEBA9SCqgvom+XTuE+fAFGvINGkhFItaZ2dvMGdT5iw==",
+      "path": "microsoft.bcl.asyncinterfaces/1.0.0",
+      "hashPath": "microsoft.bcl.asyncinterfaces.1.0.0.nupkg.sha512"
     },
     "Microsoft.CodeCoverage/17.14.1": {
       "type": "package",
@@ -513,6 +601,41 @@
       "sha512": "sha512-HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
       "path": "newtonsoft.json/13.0.3",
       "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
+    },
+    "OpenTelemetry/1.15.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oJCqFTS/9S70TGPoamdGJRvw5hLOn6I/XC4X0npDErl2sHDlAg030ArJkIHIuLFCTO5GWqj1uDhsZNjO36xMxg==",
+      "path": "opentelemetry/1.15.1",
+      "hashPath": "opentelemetry.1.15.1.nupkg.sha512"
+    },
+    "OpenTelemetry.Api/1.15.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+LJP0YBrysh4kPCRZhEyTUTcd+FFP0NPDvV4AzULBmiInGt6fp+RgBieRhUzVX/yyVEyshg3s82RWFYZJIkeGQ==",
+      "path": "opentelemetry.api/1.15.1",
+      "hashPath": "opentelemetry.api.1.15.1.nupkg.sha512"
+    },
+    "OpenTelemetry.Api.ProviderBuilderExtensions/1.15.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-aZedpOfXtHmVSWlebxJBeJg2DCdzds86mMowBTS6l+sjwV9LvQuZa0JDU9+S7FQvta4hnauxlCEYplbiDiYGeg==",
+      "path": "opentelemetry.api.providerbuilderextensions/1.15.1",
+      "hashPath": "opentelemetry.api.providerbuilderextensions.1.15.1.nupkg.sha512"
+    },
+    "OpenTelemetry.Exporter.Prometheus.AspNetCore/1.15.1-beta.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-v5mwg4Lel0THpZsDyDOPBJ/KvWVd1Wby8m8oYhlGuZ63uzfeNC1obuzLfsVKdrP8xcKxh/GnLAt6NOu2KDzY+g==",
+      "path": "opentelemetry.exporter.prometheus.aspnetcore/1.15.1-beta.1",
+      "hashPath": "opentelemetry.exporter.prometheus.aspnetcore.1.15.1-beta.1.nupkg.sha512"
+    },
+    "OpenTelemetry.Extensions.Hosting/1.15.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/mN9I16P8miDSHogFC0OFyPzUvYXibk/rLFLXW3Io50IN+XEQx7E6dSyUdMRdY+NKmOCo/oS5ICXkjdoFrwq2A==",
+      "path": "opentelemetry.extensions.hosting/1.15.1",
+      "hashPath": "opentelemetry.extensions.hosting.1.15.1.nupkg.sha512"
     },
     "SharpCompress/0.30.1": {
       "type": "package",

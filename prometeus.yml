@@ -9,3 +9,5 @@ scrape_configs:
   - job_name: 'foodselection-api-7211'
     static_configs:
       - targets: ['host.docker.internal:7211']
+volumes:
+  - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
