@@ -17,5 +17,6 @@ namespace FoodSelection.Model
         public string Category { get; set; } = string.Empty;
         public bool IsVegan { get; set; }
         public bool IsVegetarian { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

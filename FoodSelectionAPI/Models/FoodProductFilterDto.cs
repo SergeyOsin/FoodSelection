@@ -7,5 +7,8 @@
         public bool? IsVegetarian { get; set; }
         public int? MinCalories { get; set; }
         public int? MaxCalories { get; set; }
+        public DateTime? CreatedAfter { get; set; }
+        public DateTime? CreatedBefore { get; set; }
+
     }
 }

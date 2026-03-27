@@ -10,9 +10,9 @@ namespace FoodSelection.Controllers;
 [Route("api/[controller]")]
 public class FoodProductController : ControllerBase
 {
-    private readonly IFoodProductService _foodProductService;
+    private readonly IFoodProductMetrics _foodProductService;
 
-    public FoodProductController(FoodProductService foodProductService) =>
+    public FoodProductController(GrafanService foodProductService) =>
         _foodProductService = foodProductService;
 
     [HttpGet]

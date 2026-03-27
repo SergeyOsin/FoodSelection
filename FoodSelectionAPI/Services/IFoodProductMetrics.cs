@@ -3,7 +3,7 @@ using FoodSelection.Model;
 
 namespace FoodSelection.Services
 {
-    public interface IFoodProductService
+    public interface IFoodProductMetrics
     {
         Task<List<FoodProductResponseDto>> GetAllAsync();
         Task<List<FoodProductResponseDto>> FilterAsync(FoodProductFilterDto filter);

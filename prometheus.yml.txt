@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'foodselection-api-7210'
+    static_configs:
+      - targets: ['host.docker.internal:7210']
+
+  - job_name: 'foodselection-api-7211'
+    static_configs:
+      - targets: ['host.docker.internal:7211']
