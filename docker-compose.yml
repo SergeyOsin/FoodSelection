@@ -1,21 +1,77 @@
 services:
+  mongo:
+    image: mongo:7
+    container_name: food-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    networks:
+      - monitor-net
+
   prometheus:
     image: prom/prometheus
+    container_name: food-prometheus
     ports:
       - "9090:9090"
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--web.enable-lifecycle"
-      - "--storage.tsdb.path=/prometheus"
     volumes:
       - prometheus_data:/prometheus
+    networks:
+      - monitor-net
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    # ✅ БЕЗ volume монтирования! Настроим вручную после запуска
+
   grafana:
     image: grafana/grafana
+    container_name: food-grafana
     ports:
       - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+    networks:
+      - monitor-net
+
+  foodservice1:
+    build: FoodSelectionAPI
+    container_name: foodservice1
+    ports:
+      - "7210:80"
+    environment:
+      ASPNETCORE_URLS: "http://+:80"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      MongoDbSettings__ConnectionString: "mongodb://admin:password@mongo:27017"
+      MongoDbSettings__DatabaseName: "FoodDB1"
+    networks:
+      - monitor-net
+    depends_on:
+      - mongo
+
+  foodservice2:
+    build: FoodSelectionAPI
+    container_name: foodservice2
+    ports:
+      - "7211:80"
+    environment:
+      ASPNETCORE_URLS: "http://+:80"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      MongoDbSettings__ConnectionString: "mongodb://admin:password@mongo:27017"
+      MongoDbSettings__DatabaseName: "FoodDB2"
+    networks:
+      - monitor-net
+    depends_on:
+      - mongo
 
 volumes:
+  mongo_data:
   prometheus_data:
   grafana_data:
+
+networks:
+  monitor-net:
+    driver: bridge
