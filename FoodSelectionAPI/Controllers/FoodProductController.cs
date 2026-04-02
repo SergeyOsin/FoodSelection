@@ -10,9 +10,9 @@ namespace FoodSelection.Controllers;
 [Route("api/[controller]")]
 public class FoodProductController : ControllerBase
 {
-    private readonly IFoodProductService _foodProductService;
+    private readonly IFoodProductMetrics _foodProductService;
 
-    public FoodProductController(FoodProductService foodProductService) =>
+    public FoodProductController(GrafanService foodProductService) =>
         _foodProductService = foodProductService;
 
     [HttpGet]
@@ -31,9 +31,9 @@ public class FoodProductController : ControllerBase
     public async Task<ActionResult<FoodProductResponseDto>> GetById(string id)
     {
         if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Некорретный формат!");
+            return BadRequest("Incorrent ID-format!");
         var product = await _foodProductService.GetByIdAsync(id);
-        return product == null ? NotFound($"Продукт с ID {id} не найден") : Ok(product);
+        return product == null ? NotFound($"Product with ID {id} not found") : Ok(product);
     }
 
     [HttpPost]
@@ -51,26 +51,26 @@ public class FoodProductController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Некорретный формат!");
+            return BadRequest("Incorrent ID-format!");
 
         var result = await _foodProductService.UpdateAsync(id, updateDto);
-        return result ? NoContent() : NotFound($"Продукт с ID {id} не найден");
+        return result ? NoContent() : NotFound($"Product with ID {id} not found");
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Некорретный формат!");
+            return BadRequest("Incorrect ID-format!");
 
         var result = await _foodProductService.DeleteAsync(id);
-        return result ? Ok(new { message = "Продукт успешно удален" }) : NotFound($"Продукт с ID {id} не найден");
+        return result ? Ok(new { message = "Продукт успешно удален" }) : NotFound($"Product with ID {id} not found");
     }
 
     [HttpDelete("DeleteAll")]
     public async Task<IActionResult> DeleteAll()
     {
         await _foodProductService.DeleteAllAsync();
-        return Ok(new { message = "Удалены все продукты" });
+        return Ok(new { message = "All products are DELETED!" });
     }
 }

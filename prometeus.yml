@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'foodservice1'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['foodservice1:80']
+  
+  - job_name: 'foodservice2'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['foodservice2:80']

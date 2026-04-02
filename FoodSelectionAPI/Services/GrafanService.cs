@@ -4,18 +4,21 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Microsoft.Extensions.Options;
 using FoodSelection.Data;
+using System.Diagnostics;
 
 namespace FoodSelection.Services;
 
-public class FoodProductService : IFoodProductService
+public class GrafanService : IFoodProductMetrics
 {
     private readonly IMongoCollection<FoodProduct> _foodProducts;
+    private readonly FoodProductMetrics _FoodProductMetrics;
     MongoDbContext mongoDB;
 
-    public FoodProductService(IOptions<MongoDbSettings> contextDB)
+    public GrafanService(IOptions<MongoDbSettings> contextDB, FoodProductMetrics FoodProductMetrics)
     {
         mongoDB = new MongoDbContext(contextDB);
         _foodProducts = mongoDB.FoodProducts;
+        _FoodProductMetrics = FoodProductMetrics;
     }
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
     {
@@ -50,6 +53,12 @@ public class FoodProductService : IFoodProductService
         if (filter.MaxCalories.HasValue)
             filters.Add(builder.Lte(p => p.Calories, filter.MaxCalories.Value));
 
+        if (filter.CreatedAfter.HasValue)
+            filters.Add(builder.Gte(p => p.CreatedAt, filter.CreatedAfter.Value));
+
+        if (filter.CreatedBefore.HasValue)
+            filters.Add(builder.Lte(p => p.CreatedAt, filter.CreatedBefore.Value));
+
         var filterDefinition = filters.Count > 0 ? builder.And(filters) : builder.Empty;
         var products = await _foodProducts.Find(filterDefinition).ToListAsync();
         return products.Select(MapToResponseDto).ToList();
@@ -63,6 +72,7 @@ public class FoodProductService : IFoodProductService
 
     public async Task<FoodProductResponseDto> CreateAsync(FoodProductCreateDto createDto)
     {
+        var stopwatch = Stopwatch.StartNew();
         var product = new FoodProduct
         {
             Name = createDto.Name,
@@ -72,10 +82,16 @@ public class FoodProductService : IFoodProductService
             Fats = createDto.Fats,
             Category = createDto.Category,
             IsVegan = createDto.IsVegan,
-            IsVegetarian = createDto.IsVegetarian
+            IsVegetarian = createDto.IsVegetarian,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _foodProducts.InsertOneAsync(product);
+        stopwatch.Stop();
+
+        _FoodProductMetrics.ProductCreated(product.Category);
+        _FoodProductMetrics.RecordDbOperationDuration(stopwatch.ElapsedMilliseconds, "insert_one");
+
         return MapToResponseDto(product);
     }
 
@@ -115,6 +131,7 @@ public class FoodProductService : IFoodProductService
             Fats = product.Fats,
             Category = product.Category,
             IsVegan = product.IsVegan,
-            IsVegetarian = product.IsVegetarian
+            IsVegetarian = product.IsVegetarian,
+            CreatedAt = product.CreatedAt
         };
 }
