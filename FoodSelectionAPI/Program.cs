@@ -4,6 +4,7 @@ using FoodSelection.Services;
 using FoodSelection.Model;
 using FoodSelection.Models;
 using OpenTelemetry.Metrics;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseRouting();
+
+app.UseHttpMetrics();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

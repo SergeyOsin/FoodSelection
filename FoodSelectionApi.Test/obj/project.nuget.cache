@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nu1s+wnONvE=",
+  "dgSpecHash": "NHjSM5hLYrg=",
   "success": true,
   "projectFilePath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
   "expectedPackageFiles": [
@@ -18,9 +18,11 @@
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.0\\microsoft.extensions.diagnostics.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.0\\microsoft.extensions.fileproviders.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.0\\microsoft.extensions.hosting.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.http\\3.1.0\\microsoft.extensions.http.3.1.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0\\microsoft.extensions.logging.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.0\\microsoft.extensions.logging.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.logging.configuration\\10.0.0\\microsoft.extensions.logging.configuration.10.0.0.nupkg.sha512",
+    "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.objectpool\\7.0.0\\microsoft.extensions.objectpool.7.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.options\\10.0.0\\microsoft.extensions.options.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.0\\microsoft.extensions.options.configurationextensions.10.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.0\\microsoft.extensions.primitives.10.0.0.nupkg.sha512",
@@ -37,6 +39,8 @@
     "C:\\Users\\name\\.nuget\\packages\\opentelemetry.api.providerbuilderextensions\\1.15.1\\opentelemetry.api.providerbuilderextensions.1.15.1.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\opentelemetry.exporter.prometheus.aspnetcore\\1.15.1-beta.1\\opentelemetry.exporter.prometheus.aspnetcore.1.15.1-beta.1.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\opentelemetry.extensions.hosting\\1.15.1\\opentelemetry.extensions.hosting.1.15.1.nupkg.sha512",
+    "C:\\Users\\name\\.nuget\\packages\\prometheus-net\\8.2.1\\prometheus-net.8.2.1.nupkg.sha512",
+    "C:\\Users\\name\\.nuget\\packages\\prometheus-net.aspnetcore\\8.2.1\\prometheus-net.aspnetcore.8.2.1.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\sharpcompress\\0.30.1\\sharpcompress.0.30.1.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\snappier\\1.0.0\\snappier.1.0.0.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\swashbuckle.aspnetcore\\6.6.2\\swashbuckle.aspnetcore.6.6.2.nupkg.sha512",
