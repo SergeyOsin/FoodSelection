@@ -4,6 +4,9 @@ using FoodSelection.Services;
 using FoodSelection.Model;
 using FoodSelection.Models;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Instrumentation.Runtime;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,12 +20,15 @@ builder.Services.AddScoped<GrafanService>();
 builder.Services.AddSingleton<FoodProductMetrics>();
 
 builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resourse=>resourse.
+        AddService(serviceName: builder.Environment.ApplicationName))
     .WithMetrics(metrics =>
     {
         metrics.AddPrometheusExporter();
-        metrics.AddMeter("Microsoft.AspNetCore.Hosting",
-                         "Microsoft.AspNetCore.Server.Kestrel");
-
+        metrics.AddMeter("FoodSelection.API");
+        metrics.AddRuntimeInstrumentation();
+        metrics.AddHttpClientInstrumentation();
+        metrics.AddAspNetCoreInstrumentation();
         metrics.AddView("http.server.request.duration",
             new ExplicitBucketHistogramConfiguration
             {
@@ -46,7 +52,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseHttpMetrics();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
