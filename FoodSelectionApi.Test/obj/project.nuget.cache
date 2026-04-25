@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nu1s+wnONvE=",
+  "dgSpecHash": "XgBxPbcHTJU=",
   "success": true,
   "projectFilePath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
   "expectedPackageFiles": [
@@ -53,5 +53,18 @@
     "C:\\Users\\name\\.nuget\\packages\\xunit.runner.visualstudio\\3.1.4\\xunit.runner.visualstudio.3.1.4.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\zstdsharp.port\\0.7.3\\zstdsharp.port.0.7.3.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "У пакета \"OpenTelemetry.Api\" 1.15.1 есть известная уязвимость https://github.com/advisories/GHSA-g94r-2vxg-569j (уровень серьезности: средний уровень)",
+      "projectPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
+      "libraryId": "OpenTelemetry.Api",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
 }

@@ -12,7 +12,7 @@ public class FoodProductController : ControllerBase
 {
     private readonly IFoodProductMetrics _foodProductService;
 
-    public FoodProductController(GrafanService foodProductService) =>
+    public FoodProductController(FoodProductMetrics foodProductService) =>
         _foodProductService = foodProductService;
 
     [HttpGet]
