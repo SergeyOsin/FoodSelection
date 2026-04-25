@@ -6,6 +6,7 @@ public class FoodProductMetrics
 {
     private readonly Counter<int> _productCreatedCounter;
     private readonly Histogram<double> _dbOperationDuration;
+    private readonly Gauge<double> _gauge;
 
     public FoodProductMetrics(IMeterFactory meterFactory)
     {
@@ -14,6 +15,10 @@ public class FoodProductMetrics
             description: "Количество созданных продуктов");
         _dbOperationDuration = meter.CreateHistogram<double>("foodselection.db.operation.duration",
             unit: "ms", description: "Длительность операций с MongoDB");
+        _gauge = meter.CreateGauge<double>(
+            name: "time",
+            unit: "seconds",
+            description: "Секунды");
     }
 
     public void ProductCreated(string category)=>

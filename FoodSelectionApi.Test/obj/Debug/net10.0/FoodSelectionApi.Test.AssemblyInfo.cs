@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FoodSelectionApi.Test")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dcd3034866bacb25d648181ba077dd0419122d92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+497688cfe488e3a48f866df0011b4b9092240e57")]
 [assembly: System.Reflection.AssemblyProductAttribute("FoodSelectionApi.Test")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FoodSelectionApi.Test")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
