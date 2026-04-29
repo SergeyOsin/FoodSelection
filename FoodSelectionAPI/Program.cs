@@ -18,6 +18,7 @@ builder.Services.AddScoped<FoodProductMetrics>();
 
 builder.Services.AddSingleton<GrafanService>();
 
+
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.
         AddService(serviceName: builder.Environment.ApplicationName))
@@ -27,7 +28,6 @@ builder.Services.AddOpenTelemetry()
         metrics.AddMeter("FoodSelection.API");
         metrics.AddRuntimeInstrumentation();
         metrics.AddHttpClientInstrumentation();
-        metrics.AddAspNetCoreInstrumentation();
         metrics.AddView("http.server.request.duration",
             new ExplicitBucketHistogramConfiguration
             {
@@ -50,11 +50,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseHttpMetrics();
+app.UseMetricServer();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-app.MapPrometheusScrapingEndpoint();
 
 app.MapControllers();
 
