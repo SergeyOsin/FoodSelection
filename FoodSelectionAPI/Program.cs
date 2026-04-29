@@ -1,4 +1,3 @@
-
 using FoodSelection.Data;
 using FoodSelection.Services;
 using FoodSelection.Model;
@@ -15,9 +14,9 @@ builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 
 builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddScoped<GrafanService>();
+builder.Services.AddScoped<FoodProductMetrics>();
 
-builder.Services.AddSingleton<FoodProductMetrics>();
+builder.Services.AddSingleton<GrafanService>();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.
@@ -51,7 +50,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
