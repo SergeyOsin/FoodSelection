@@ -27,6 +27,13 @@ services:
       - "9090:9090"
     restart: unless-stopped
 
+  redis:
+    image: redis:latest
+    container_name: food_redis
+    ports:
+       - "6380:6379"
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana
     container_name: food-grafana
@@ -69,11 +76,13 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+  
 
 volumes:
   mongo_data:
   prometheus_data:
   grafana_data:
+  redis-data:
 
 networks:
   app-network:

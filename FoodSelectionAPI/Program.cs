@@ -13,11 +13,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<FoodProductMetrics>();
 
 builder.Services.AddSingleton<GrafanService>();
 
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "redis:6379";
+    options.InstanceName = "FoodCache";
+});
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.
