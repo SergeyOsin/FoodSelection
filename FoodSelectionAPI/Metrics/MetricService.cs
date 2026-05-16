@@ -1,13 +1,13 @@
 ﻿using System.Diagnostics.Metrics;
 
-namespace FoodSelection.Services;
+namespace FoodSelection.Metrics;
 
-public class GrafanService
+public class MetricService
 {
     private readonly Counter<int> _productCreatedCounter;
     private readonly Histogram<double> _dbOperationDuration;
 
-    public GrafanService(IMeterFactory meterFactory)
+    public MetricService(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create("FoodSelection.API");
         _productCreatedCounter = meter.CreateCounter<int>("foodselection.products.created",

@@ -359,3 +359,6 @@ C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\Op
 C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\OpenTelemetry.Instrumentation.Runtime.dll
 C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\Prometheus.NetStandard.dll
 C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\Prometheus.AspNetCore.dll
+C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\Microsoft.Extensions.Caching.StackExchangeRedis.dll
+C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\name\Documents\FoodSelection\FoodSelectionApi.Test\bin\Debug\net10.0\StackExchange.Redis.dll

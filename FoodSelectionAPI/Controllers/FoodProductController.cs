@@ -10,9 +10,9 @@ namespace FoodSelection.Controllers;
 [Route("api/[controller]")]
 public class FoodProductController : ControllerBase
 {
-    private readonly IFoodProductMetrics _foodProductService;
+    private readonly IFoodProductService _foodProductService;
 
-    public FoodProductController(FoodProductMetrics foodProductService) =>
+    public FoodProductController(FoodProductService foodProductService) =>
         _foodProductService = foodProductService;
 
     [HttpGet]
@@ -22,7 +22,7 @@ public class FoodProductController : ControllerBase
     [HttpGet("filter")]
     public async Task<ActionResult<List<FoodProductResponseDto>>> Filter(
         [FromQuery] FoodProductFilterDto filter)
-    {         
+    {
         var products = await _foodProductService.FilterAsync(filter);
         return Ok(products);
     }
@@ -31,7 +31,7 @@ public class FoodProductController : ControllerBase
     public async Task<ActionResult<FoodProductResponseDto>> GetById(string id)
     {
         if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Incorrent ID-format!");
+            return BadRequest("Incorrect ID-format!");
         var product = await _foodProductService.GetByIdAsync(id);
         return product == null ? NotFound($"Product with ID {id} not found") : Ok(product);
     }
@@ -51,7 +51,7 @@ public class FoodProductController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Incorrent ID-format!");
+            return BadRequest("Incorrect ID-format!");
 
         var result = await _foodProductService.UpdateAsync(id, updateDto);
         return result ? NoContent() : NotFound($"Product with ID {id} not found");
