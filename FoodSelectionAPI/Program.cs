@@ -7,6 +7,7 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Instrumentation.Runtime;
 using Prometheus;
+using FoodSelection.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +15,15 @@ builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 
 builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddScoped<FoodProductMetrics>();
+builder.Services.AddScoped<FoodProductService>();
 
-builder.Services.AddSingleton<GrafanService>();
+builder.Services.AddSingleton<MetricService>();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "redis:6379";
+    options.InstanceName = "food-redis";
+});
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.
