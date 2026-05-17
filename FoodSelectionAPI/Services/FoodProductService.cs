@@ -28,7 +28,7 @@ public class FoodProductService : IFoodProductService
 
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
     {
-        const string cacheKey = "foodproducts:all";
+        string cacheKey = "foodproducts:all";
 
         var cached = await _distributedCache.GetStringAsync(cacheKey);
         if (!string.IsNullOrEmpty(cached))
@@ -119,7 +119,7 @@ public class FoodProductService : IFoodProductService
             JsonSerializer.Serialize(result, JsonOptions),
             new DistributedCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(720)
             });
 
         return result;

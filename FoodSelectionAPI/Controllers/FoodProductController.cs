@@ -3,6 +3,7 @@ using FoodSelection.Models;
 using FoodSelection.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using System.Collections.Generic;
 
 namespace FoodSelection.Controllers;
 
@@ -27,22 +28,13 @@ public class FoodProductController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<FoodProductResponseDto>> GetById(string id)
-    {
-        if (!ObjectId.TryParse(id, out var objectId))
-            return BadRequest("Incorrect ID-format!");
-        var product = await _foodProductService.GetByIdAsync(id);
-        return product == null ? NotFound($"Product with ID {id} not found") : Ok(product);
-    }
-
     [HttpPost]
     public async Task<ActionResult<FoodProductResponseDto>> Create([FromBody] FoodProductCreateDto createDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         var result = await _foodProductService.CreateAsync(createDto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        return CreatedAtAction(nameof(GetAllRedisKeys), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
@@ -72,5 +64,28 @@ public class FoodProductController : ControllerBase
     {
         await _foodProductService.DeleteAllAsync();
         return Ok(new { message = "All products are DELETED!" });
+    }
+
+    [HttpGet("redis/AllKeys")]
+    public async Task<ActionResult<IEnumerable<string>>> GetAllRedisKeys()
+    {
+        var keys = await _foodProductService.GetAllAsync();
+        return Ok(keys);
+    }
+
+    [HttpDelete("redis/Delete")]
+    public async Task<IActionResult> DeleteAllKeys()
+    {
+        await _foodProductService.DeleteAllAsync();
+        return Ok(new { message = "Redis cache deleted." });
+    }
+
+    [HttpGet("redis/key/{key}")]
+    public async Task<IActionResult> GetRedisKey(string key)
+    {
+        if (!ObjectId.TryParse(key, out var objectId))
+            return BadRequest("Incorrect ID-format!");
+        await _foodProductService.GetByIdAsync(key);
+        return Ok(new { message = $"Key '{key}' deleted." });
     }
 }
