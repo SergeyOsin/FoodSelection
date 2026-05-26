@@ -32,8 +32,12 @@ public class FoodProductService : IFoodProductService
 
         var cached = await _distributedCache.GetStringAsync(cacheKey);
         if (!string.IsNullOrEmpty(cached))
+        {
+            _foodProductMetrics.RecordCacheRequest("all_products", isHit: true);
             return JsonSerializer.Deserialize<List<FoodProductResponseDto>>(cached, JsonOptions) ?? [];
+        }
 
+        _foodProductMetrics.RecordCacheRequest("all_products", isHit: true);
         var count = await _foodProducts.CountDocumentsAsync(_ => true);
         List<FoodProduct> products;
 
@@ -61,8 +65,12 @@ public class FoodProductService : IFoodProductService
 
         var cached = await _distributedCache.GetStringAsync(cacheKey);
         if (!string.IsNullOrEmpty(cached))
+        {
+            _foodProductMetrics.RecordCacheRequest("filter_products", isHit: true);
             return JsonSerializer.Deserialize<List<FoodProductResponseDto>>(cached, JsonOptions) ?? [];
+        }
 
+        _foodProductMetrics.RecordCacheRequest("filter_products", isHit: false);
         var builder = Builders<FoodProduct>.Filter;
         var filters = new List<FilterDefinition<FoodProduct>>();
 
@@ -104,13 +112,14 @@ public class FoodProductService : IFoodProductService
     {
         var cacheKey = $"foodproducts:id:{id}";
 
-        var cached =
-
-
-await _distributedCache.GetStringAsync(cacheKey);
+        var cached = await _distributedCache.GetStringAsync(cacheKey);
         if (!string.IsNullOrEmpty(cached))
+        {
+            _foodProductMetrics.RecordCacheRequest("get_by_id", isHit: true);
             return JsonSerializer.Deserialize<FoodProductResponseDto>(cached, JsonOptions);
+        }
 
+        _foodProductMetrics.RecordCacheRequest("get_by_id", isHit: false);
         var product = await _foodProducts.Find(p => p.Id == id).FirstOrDefaultAsync();
         if (product == null)
             return null;

@@ -15,7 +15,7 @@ builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
 
 builder.Services.AddSingleton<MongoDbContext>();
-builder.Services.AddScoped<FoodProductService>();
+builder.Services.AddScoped<IFoodProductService,FoodProductService>();
 
 builder.Services.AddSingleton<MetricService>();
 
