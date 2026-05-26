@@ -12,8 +12,8 @@ namespace FoodSelectionApi.Test
         private string[] NameProduct = { "Мясо", "Картошка", "Бургер", "Курица" };
         public FoodSelectionAPITest()
         {
-            _client = new HttpClient();
-            _client.BaseAddress = new Uri("https://localhost:7210/");
+            var apiUrl = Environment.GetEnvironmentVariable("API_BASE_URL") ?? "http://localhost:7210/";
+            _client = new HttpClient { BaseAddress = new Uri(apiUrl) };
             rand = new Random();
         }
         [Fact]

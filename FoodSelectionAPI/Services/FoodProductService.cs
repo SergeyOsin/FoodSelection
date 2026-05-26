@@ -91,7 +91,7 @@ public class FoodProductService : IFoodProductService
         var products = await _foodProducts.Find(filterDefinition).ToListAsync();
         var result = products.Select(MapToResponseDto).ToList();
 
-        await _distributedCache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result, JsonOptions), 
+        await _distributedCache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result, JsonOptions),
             new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
@@ -104,7 +104,10 @@ public class FoodProductService : IFoodProductService
     {
         var cacheKey = $"foodproducts:id:{id}";
 
-        var cached = await _distributedCache.GetStringAsync(cacheKey);
+        var cached =
+
+
+await _distributedCache.GetStringAsync(cacheKey);
         if (!string.IsNullOrEmpty(cached))
             return JsonSerializer.Deserialize<FoodProductResponseDto>(cached, JsonOptions);
 
@@ -167,9 +170,12 @@ public class FoodProductService : IFoodProductService
         var result = await _foodProducts.UpdateOneAsync(p => p.Id == id, update);
 
         if (result.ModifiedCount > 0)
+        {
             await InvalidateCacheAsync();
-
+            await _distributedCache.RemoveAsync($"foodproducts:id:{id}");
+        }
         return result.ModifiedCount > 0;
+
     }
 
     public async Task<bool> DeleteAsync(string id)
@@ -177,18 +183,19 @@ public class FoodProductService : IFoodProductService
         var result = await _foodProducts.DeleteOneAsync(p => p.Id == id);
 
         if (result.DeletedCount > 0)
+        {
             await InvalidateCacheAsync();
-
+            await _distributedCache.RemoveAsync($"foodproducts:id:{id}");
+        }
         return result.DeletedCount > 0;
     }
-
     public async Task DeleteAllAsync()
     {
         await _foodProducts.DeleteManyAsync(_ => true);
         await InvalidateCacheAsync();
     }
 
-    private async Task InvalidateCacheAsync()=>
+    private async Task InvalidateCacheAsync() =>
         await _distributedCache.RemoveAsync("foodproducts:all");
 
     private FoodProductResponseDto MapToResponseDto(FoodProduct product) =>
@@ -206,3 +213,7 @@ public class FoodProductService : IFoodProductService
             CreatedAt = product.CreatedAt
         };
 }
+
+
+
+

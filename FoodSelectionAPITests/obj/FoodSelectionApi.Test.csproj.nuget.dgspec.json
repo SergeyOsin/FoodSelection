@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj": {}
+    "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionApi.Test.csproj": {}
   },
   "projects": {
-    "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj": {
+    "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionApi.Test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
+        "projectUniqueName": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionApi.Test.csproj",
         "projectName": "FoodSelectionApi.Test",
-        "projectPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\FoodSelectionApi.Test.csproj",
+        "projectPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionApi.Test.csproj",
         "packagesPath": "C:\\Users\\name\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionApi.Test\\obj\\",
+        "outputPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

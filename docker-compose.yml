@@ -12,6 +12,20 @@ services:
     networks:
       - app-network
 
+  tests:
+    build:
+      context: .
+      dockerfile: Tests.dockerfile
+    container_name: food-tests
+    depends_on:
+      - mongo
+      - foodservice1
+      - foodservice2
+    networks:
+      - app-network
+    environment:
+      API_BASE_URL: "http://foodservice1:8080/"
+    command: ["dotnet", "test", "FoodSelectionAPITests/FoodSelectionAPITest.csproj"]
 
   prometheus:
     image: prom/prometheus:latest
@@ -84,7 +98,7 @@ volumes:
   mongo_data:
   prometheus_data:
   grafana_data:
-  redis-data:
+  redis_data:
 
 networks:
   app-network:
