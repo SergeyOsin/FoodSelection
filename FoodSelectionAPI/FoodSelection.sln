@@ -5,7 +5,7 @@ VisualStudioVersion = 18.5.11605.296
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodSelection", "FoodSelection.csproj", "{FA9DE428-DEEC-4AFB-BAEA-2684CC3DDCE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodSelectionApi.Test", "..\FoodSelectionApi.Test\FoodSelectionApi.Test.csproj", "{B1E5B1C6-2C3C-4631-9FB0-C5B5E48A6EBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodSelectionAPITest", "..\FoodSelectionAPITests\FoodSelectionAPITest.csproj", "{C181EF60-691B-7566-DF7B-30BA1B628D8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{FA9DE428-DEEC-4AFB-BAEA-2684CC3DDCE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA9DE428-DEEC-4AFB-BAEA-2684CC3DDCE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA9DE428-DEEC-4AFB-BAEA-2684CC3DDCE8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B1E5B1C6-2C3C-4631-9FB0-C5B5E48A6EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B1E5B1C6-2C3C-4631-9FB0-C5B5E48A6EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B1E5B1C6-2C3C-4631-9FB0-C5B5E48A6EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B1E5B1C6-2C3C-4631-9FB0-C5B5E48A6EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C181EF60-691B-7566-DF7B-30BA1B628D8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C181EF60-691B-7566-DF7B-30BA1B628D8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C181EF60-691B-7566-DF7B-30BA1B628D8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C181EF60-691B-7566-DF7B-30BA1B628D8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

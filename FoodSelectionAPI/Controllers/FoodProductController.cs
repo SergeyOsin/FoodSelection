@@ -3,7 +3,6 @@ using FoodSelection.Models;
 using FoodSelection.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
-using System.Collections.Generic;
 
 namespace FoodSelection.Controllers;
 
@@ -13,12 +12,26 @@ public class FoodProductController : ControllerBase
 {
     private readonly IFoodProductService _foodProductService;
 
-    public FoodProductController(FoodProductService foodProductService) =>
+    public FoodProductController(IFoodProductService foodProductService) =>
         _foodProductService = foodProductService;
 
     [HttpGet]
     public async Task<ActionResult<List<FoodProductResponseDto>>> GetAll() =>
         Ok(await _foodProductService.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<FoodProductResponseDto>> GetById(string id)
+    {
+        if (!ObjectId.TryParse(id, out _))
+            return BadRequest("Incorrect ID-format!");
+
+        var product = await _foodProductService.GetByIdAsync(id);
+
+        if (product == null)
+            return NotFound($"Product with ID {id} not found");
+
+        return Ok(product);
+    }
 
     [HttpGet("filter")]
     public async Task<ActionResult<List<FoodProductResponseDto>>> Filter(
@@ -33,8 +46,10 @@ public class FoodProductController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
         var result = await _foodProductService.CreateAsync(createDto);
-        return CreatedAtAction(nameof(GetAllRedisKeys), new { id = result.Id }, result);
+
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
@@ -42,7 +57,8 @@ public class FoodProductController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        if (!ObjectId.TryParse(id, out var objectId))
+
+        if (!ObjectId.TryParse(id, out _))
             return BadRequest("Incorrect ID-format!");
 
         var result = await _foodProductService.UpdateAsync(id, updateDto);
@@ -52,11 +68,12 @@ public class FoodProductController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        if (!ObjectId.TryParse(id, out var objectId))
+        if (!ObjectId.TryParse(id, out _))
             return BadRequest("Incorrect ID-format!");
 
         var result = await _foodProductService.DeleteAsync(id);
-        return result ? Ok(new { message = "Продукт успешно удален" }) : NotFound($"Product with ID {id} not found");
+
+        return result ? Ok(new { message = "Product successfully deleted" }) : NotFound($"Product with ID {id} not found");
     }
 
     [HttpDelete("DeleteAll")]
@@ -64,28 +81,5 @@ public class FoodProductController : ControllerBase
     {
         await _foodProductService.DeleteAllAsync();
         return Ok(new { message = "All products are DELETED!" });
-    }
-
-    [HttpGet("redis/AllKeys")]
-    public async Task<ActionResult<IEnumerable<string>>> GetAllRedisKeys()
-    {
-        var keys = await _foodProductService.GetAllAsync();
-        return Ok(keys);
-    }
-
-    [HttpDelete("redis/Delete")]
-    public async Task<IActionResult> DeleteAllKeys()
-    {
-        await _foodProductService.DeleteAllAsync();
-        return Ok(new { message = "Redis cache deleted." });
-    }
-
-    [HttpGet("redis/key/{key}")]
-    public async Task<IActionResult> GetRedisKey(string key)
-    {
-        if (!ObjectId.TryParse(key, out var objectId))
-            return BadRequest("Incorrect ID-format!");
-        await _foodProductService.GetByIdAsync(key);
-        return Ok(new { message = $"Key '{key}' deleted." });
     }
 }
