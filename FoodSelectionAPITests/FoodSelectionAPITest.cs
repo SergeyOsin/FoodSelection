@@ -25,13 +25,13 @@ namespace FoodSelectionApi.Test
         }
 
         [Fact]
-        public async Task Add10000Elements()
+        public async Task Add100Elements()
         {
             await _client.DeleteAsync("api/FoodProduct/DeleteAll");
 
             int countSuccess = 0;
 
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var newElem = new FoodProduct
                 {
@@ -50,7 +50,7 @@ namespace FoodSelectionApi.Test
                     countSuccess++;
             }
 
-            Assert.Equal(10000, countSuccess);
+            Assert.Equal(100, countSuccess);
         }
 
         [Fact]

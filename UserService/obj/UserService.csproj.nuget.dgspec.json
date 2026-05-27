@@ -60,7 +60,7 @@
               "target": "Package",
               "version": "[3.8.1, )"
             },
-            "MongoDB.Driver.GridFS": {
+            "MongoDB.Driver": {
               "target": "Package",
               "version": "[2.30.0, )"
             },

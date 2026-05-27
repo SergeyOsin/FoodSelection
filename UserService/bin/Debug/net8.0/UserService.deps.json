@@ -10,7 +10,7 @@
         "dependencies": {
           "Confluent.Kafka": "2.14.0",
           "MongoDB.Bson": "3.8.1",
-          "MongoDB.Driver.GridFS": "2.30.0",
+          "MongoDB.Driver": "2.30.0",
           "Newtonsoft.Json": "13.0.4",
           "Swashbuckle.AspNetCore": "6.6.2"
         },
@@ -231,19 +231,6 @@
           }
         }
       },
-      "MongoDB.Driver.GridFS/2.30.0": {
-        "dependencies": {
-          "MongoDB.Bson": "3.8.1",
-          "MongoDB.Driver": "2.30.0",
-          "MongoDB.Driver.Core": "2.30.0"
-        },
-        "runtime": {
-          "lib/netstandard2.1/MongoDB.Driver.GridFS.dll": {
-            "assemblyVersion": "2.30.0.0",
-            "fileVersion": "2.30.0.0"
-          }
-        }
-      },
       "MongoDB.Libmongocrypt/1.12.0": {
         "runtime": {
           "lib/netstandard2.1/MongoDB.Libmongocrypt.dll": {
@@ -408,13 +395,6 @@
       "sha512": "sha512-oepDgu24lo44SljuHmIQ99x6jHISnMC4tLfzQGniQg39xiMD8nxalm1HM9RDZcuZbbWa4F6YLt2AIhWkny3XWA==",
       "path": "mongodb.driver.core/2.30.0",
       "hashPath": "mongodb.driver.core.2.30.0.nupkg.sha512"
-    },
-    "MongoDB.Driver.GridFS/2.30.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-u7OknyE9F0r4vSISxv/XJKIgYzfJGmzE42WpY0RTXPKM1rxe9NR4HVU1YF7GOpt8IxB6UgGXfdh7KO5PxARftg==",
-      "path": "mongodb.driver.gridfs/2.30.0",
-      "hashPath": "mongodb.driver.gridfs.2.30.0.nupkg.sha512"
     },
     "MongoDB.Libmongocrypt/1.12.0": {
       "type": "package",

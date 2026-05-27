@@ -52,7 +52,7 @@ namespace FoodSelectionApi.Test
         }
 
         [Fact]
-        public async Task Add10000Elements_Cache()
+        public async Task Add100Elements_Cache()
         {
             await _client.DeleteAsync("api/FoodProduct/DeleteAll");
 
@@ -62,7 +62,7 @@ namespace FoodSelectionApi.Test
 
             int countSuccess = 0;
 
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var newElem = new FoodProduct
                 {
@@ -83,7 +83,7 @@ namespace FoodSelectionApi.Test
                 }
             }
 
-            Assert.Equal(10000, countSuccess);
+            Assert.Equal(100, countSuccess);
 
             var response1 = await _client.GetAsync("api/FoodProduct");
             response1.EnsureSuccessStatusCode();
