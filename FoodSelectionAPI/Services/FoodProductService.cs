@@ -7,6 +7,8 @@ using System.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using FoodSelection.Metrics;
+using Confluent.Kafka;
+using FoodSelection.Kafka;
 
 namespace FoodSelection.Services;
 
@@ -156,11 +158,13 @@ public class FoodProductService : IFoodProductService
         await _foodProducts.InsertOneAsync(product);
         stopwatch.Stop();
 
-        await InvalidateCacheAsync();
+        var config = new ProducerConfig { BootstrapServers = "kafka:9092" };
+        using var producer = new ProducerBuilder<Null, string>(config).Build();
 
-        _foodProductMetrics.ProductCreated(product.Category);
-        _foodProductMetrics.RecordDbOperationDuration(stopwatch.ElapsedMilliseconds, "insert_one");
+        var Message = new ObjectCreated(product.Id, product.UserID);
+        var json = JsonSerializer.Serialize(Message);
 
+        await producer.ProduceAsync("object-created", new Message<Null, string> { Value = json });
         return MapToResponseDto(product);
     }
 

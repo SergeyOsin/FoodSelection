@@ -1,8 +1,13 @@
-﻿namespace FoodSelection.Models
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace FoodSelection.Models
 {
     public class FoodProductDto
     {
         public string Name { get; set; } = string.Empty;
+        public string UserID { get; set; }
+
+        public string Status { get; set; } = "Pending";
         public int Calories { get; set; }
         public double Protein { get; set; }
         public double Carbs { get; set; }

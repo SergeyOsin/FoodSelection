@@ -1,0 +1,3 @@
+﻿namespace User.Kafka;
+
+public record ObjectConfirmed(string ObjectId, string ConfiationTime);

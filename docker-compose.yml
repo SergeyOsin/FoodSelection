@@ -12,6 +12,38 @@ services:
     networks:
       - app-network
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+       ZOOKEEPER_CLIENT_PORT: 2181
+       ZOOKEEPER_TICK_TIME: 2000
+    ports:
+       - 22181:2181
+    networks: 
+       - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: food-kafka
+    depends_on:
+       - zookeeper
+    ports:
+       - 29092:29092
+    environment:
+         KAFKA_BROKER_ID: 1
+         KAFKA_PROCESS_ROLES: broker,controller
+         KAFKA_NODE_ID: 1
+         KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+         KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+         KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+         CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    networks:
+        - app-network
+
   tests:
     build:
       context: .
@@ -93,6 +125,30 @@ services:
     networks:
       - app-network
   
+  user-service:
+    build:
+      context: ./UserService
+      dockerfile: User.dockerfile
+
+    container_name: food-user-service
+
+    depends_on:
+      - mongo
+      - kafka
+
+    ports:
+      - "7212:8080"
+
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__MongoDb: "mongodb://admin:password@mongo:27017"
+      Kafka__BootstrapServers: "kafka:9092"
+
+    restart: unless-stopped
+
+    networks:
+      - app-network
 
 volumes:
   mongo_data:

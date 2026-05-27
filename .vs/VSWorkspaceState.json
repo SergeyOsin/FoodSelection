@@ -2,10 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\FoodSelectionAPI",
-    "\\FoodSelectionApi.Test",
+    "\\FoodSelectionAPITests",
     "\\FoodSelectionAPI\\Models",
     "\\FoodSelectionAPI\\Services"
   ],
-  "SelectedNode": "\\FoodSelectionAPI\\Services\\FoodProductService.cs",
+  "SelectedNode": "\\FoodSelectionAPITests\\FoodSelectionAPICacheTest.cs",
   "PreviewInSolutionExplorer": false
 }

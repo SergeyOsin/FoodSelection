@@ -8,6 +8,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Instrumentation.Runtime;
 using Prometheus;
 using FoodSelection.Metrics;
+using FoodSelection.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.Configure<MongoDbSettings>(
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IFoodProductService,FoodProductService>();
 
+builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddSingleton<MetricService>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
