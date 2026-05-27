@@ -12,6 +12,30 @@ services:
     networks:
       - app-network
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.3
+    environment:
+       ZOOKEEPER_CLIENT_PORT: 2181
+       ZOOKEEPER_TICK_TIME: 2000
+    ports:
+       - "22181:2181"
+    networks: 
+       - app-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.3
+    container_name: food-kafka
+    depends_on:
+       - zookeeper
+    ports:
+       - "9092:9092"
+    environment:
+         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+         KAFKA_ADVERTISED_HOST_NAME: kafka
+         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+        - app-network
+
   tests:
     build:
       context: .
@@ -65,7 +89,7 @@ services:
     build:
       context: .
       dockerfile: ./first_microserv.dockerfile
-    container_name: foodservice1
+    container_name: FoodService
     ports:
       - "7210:8080"
     environment:
@@ -73,10 +97,11 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"  
       MongoDbSettings__ConnectionString: "mongodb://admin:password@mongo:27017"
       MongoDbSettings__DatabaseName: "FoodDB1" 
+      Kafka__BootstrapServers: "kafka:9092"
     restart: unless-stopped
     networks:
       - app-network
-
+  
   foodservice2:
     build:
       context: .
@@ -88,11 +113,37 @@ services:
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_ENVIRONMENT: "Development"
       MongoDbSettings__ConnectionString: "mongodb://admin:password@mongo:27017"
-      MongoDbSettings__DatabaseName: "FoodDB2" 
+      MongoDbSettings__DatabaseName: "FoodDB2"
+      Kafka__BootstrapServers: "kafka:9092"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     restart: unless-stopped
     networks:
       - app-network
   
+  user-service:
+    build:
+      context: ./UserService
+      dockerfile: User.dockerfile
+
+    container_name: food-user-service
+
+    depends_on:
+      - mongo
+      - kafka
+
+    ports:
+      - "7212:8080"
+
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__MongoDb: "mongodb://admin:password@mongo:27017"
+      Kafka__BootstrapServers: "kafka:9092"
+
+    restart: unless-stopped
+
+    networks:
+      - app-network
 
 volumes:
   mongo_data:
