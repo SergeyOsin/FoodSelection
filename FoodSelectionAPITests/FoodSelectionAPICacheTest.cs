@@ -111,7 +111,7 @@ namespace FoodSelectionApi.Test
 
             var postRes = await _client.PostAsJsonAsync("api/FoodProduct", newElem);
             var createdItem = await postRes.Content.ReadFromJsonAsync<FoodProductResponseDto>();
-            string id = createdItem!.Id;
+            string? id = createdItem!.Id;
 
             await _client.GetAsync($"api/FoodProduct/{id}");
 
