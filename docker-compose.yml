@@ -18,7 +18,7 @@ services:
        ZOOKEEPER_CLIENT_PORT: 2181
        ZOOKEEPER_TICK_TIME: 2000
     ports:
-       - "22181:2181"
+       - "2181:2181"
     networks: 
        - app-network
 
@@ -30,33 +30,22 @@ services:
     ports:
        - "9092:9092"
     environment:
+         KAFKA_BROKER_ID: 1
          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-         KAFKA_ADVERTISED_HOST_NAME: kafka
+         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+         KAFKA_CREATE_TOPICS: "object-created-topic:1:1,confirmation-topic:1:1"
+    restart: unless-stopped
     networks:
         - app-network
 
-  tests:
-    build:
-      context: .
-      dockerfile: Tests.dockerfile
-    container_name: food-tests
-    depends_on:
-      - mongo
-      - foodservice1
-      - foodservice2
-    networks:
-      - app-network
-    environment:
-      API_BASE_URL: "http://foodservice1:8080/"
-    command: ["dotnet", "test", "FoodSelectionAPITests/FoodSelectionAPITest.csproj"]
-
+  
   prometheus:
     image: prom/prometheus:latest
     container_name: food-prometheus
     depends_on:
       - foodservice1
-      - foodservice2
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
@@ -101,25 +90,7 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-  
-  foodservice2:
-    build:
-      context: .
-      dockerfile: ./second_microserv.dockerfile
-    container_name: foodservice2
-    ports:
-      - "7211:8080"
-    environment:
-      ASPNETCORE_URLS: "http://+:8080"
-      ASPNETCORE_ENVIRONMENT: "Development"
-      MongoDbSettings__ConnectionString: "mongodb://admin:password@mongo:27017"
-      MongoDbSettings__DatabaseName: "FoodDB2"
-      Kafka__BootstrapServers: "kafka:9092"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-    restart: unless-stopped
-    networks:
-      - app-network
-  
+    
   user-service:
     build:
       context: ./UserService

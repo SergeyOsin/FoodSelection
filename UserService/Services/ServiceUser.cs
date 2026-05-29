@@ -1,45 +1,28 @@
 ﻿using MongoDB.Driver;
-namespace User.Services;
-
-using User.Models;
+using Microsoft.Extensions.Options;
+namespace User.Models;
 public class ServiceUser
 {
     private readonly IMongoCollection<User> _users;
 
-    public ServiceUser(IConfiguration configuration)
+    public ServiceUser(IOptions<DataBase>dataSet)
     {
-        var client = new MongoClient(configuration.GetConnectionString("MongoDb"));
+        var client = new MongoClient(dataSet.Value.ConnectionString);
 
-        var database = client.GetDatabase("UserDb");
+        var database = client.GetDatabase(dataSet.Value.DatabaseName);
 
-        _users = database.GetCollection<User>("Users");
+        _users = database.GetCollection<User>(dataSet.Value.CollectionName);
     }
 
-    public async Task<List<User>> GetAllAsync()
-    {
-        return await _users.Find(_ => true).ToListAsync();
-    }
+    public async Task<List<User>> GetAllAsync()=> await _users.Find(_ => true).ToListAsync();
 
-    public async Task<User?> GetByIdAsync(string id)
-    {
-        return await _users.Find(x => x.Id == id).FirstOrDefaultAsync();
-    }
+    public async Task<User?> GetByIdAsync(string id)=>await _users.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-    public async Task<User> CreateAsync(User user)
-    {
-        user.RegisteredObjects = 0;
 
-        await _users.InsertOneAsync(user);
+    public async Task CreateAsync(User user)=> await _users.InsertOneAsync(user);
 
-        return user;
-    }
-
-    public async Task UpdateAsync(string id, string name)
-    {
-        var update = Builders<User>.Update.Set(x => x.Name, name);
-
-        await _users.UpdateOneAsync(x => x.Id == id, update);
-    }
+    public async Task UpdateAsync(string id, User NewUser)=>
+        await _users.ReplaceOneAsync(x => x.Id == id, NewUser);
 
     public async Task DeleteAsync(string id)
     {

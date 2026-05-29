@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using User.Models;
-using User.Services;
 
 namespace User.Controllers;
 
@@ -30,20 +29,26 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> Create(User user)
     {
-        var created = await _service.CreateAsync(user);
+        var NewUser = new User
+        {
+            Name = "Sergey",
+            RegisteredObjects=0,
+   
+        };
 
-        return Ok(created);
+       await _service.CreateAsync(NewUser);
+       return Ok(NewUser);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, [FromBody] string name)
+    public async Task<IActionResult> Update(string id, User newUser)
     {
         var user = await _service.GetByIdAsync(id);
 
         if (user == null)
             return NotFound();
 
-        await _service.UpdateAsync(id, name);
+        await _service.UpdateAsync(id, newUser);
 
         return NoContent();
     }
@@ -51,8 +56,9 @@ public class UserController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
+        var user = await _service.GetByIdAsync(id);
+        if (user == null) return NotFound();
         await _service.DeleteAsync(id);
-
         return NoContent();
     }
 }

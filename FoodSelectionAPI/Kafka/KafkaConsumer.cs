@@ -1,46 +1,88 @@
 ﻿using Confluent.Kafka;
-using FoodSelection.Data;
-using FoodSelection.Model;
-using MongoDB.Driver;
 using System.Text.Json;
+using FoodSelection.Services;
 
-namespace FoodSelection.Kafka
+
+namespace FoodSelection.Models;
+
+public class KafkaConsumer : BackgroundService
 {
-    public class KafkaConsumer: BackgroundService
+    private readonly ILogger<KafkaConsumer> _logger;
+    private readonly IConsumer<Ignore, string> _consumer;
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public KafkaConsumer(ILogger<KafkaConsumer> logger, IServiceScopeFactory scopeFactory)
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public KafkaConsumer(IServiceProvider serviceProvider)=>_serviceProvider= serviceProvider;
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        var config = new ConsumerConfig
         {
-            var config = new ConsumerConfig
-            {
-                GroupId = "new-group",
-                BootstrapServers = "kafka:9092",
-                AutoOffsetReset = AutoOffsetReset.Earliest
-            };
+            BootstrapServers = "kafka:9092",
+            GroupId = "foodselection-confirmation-group",
+            AutoOffsetReset = AutoOffsetReset.Earliest
+        };
+        _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
+        _consumer.Subscribe("confirmation-topic");
+    }
 
-            using var consumer = new ConsumerBuilder<Ignore, string>(config).Build();
-            consumer.Subscribe("имя-топика");
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await Task.Yield();
 
+        while (!stoppingToken.IsCancellationRequested)
+        {
             try
             {
-                while (!stoppingToken.IsCancellationRequested)
+                var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
+                if (consumeResult == null)
                 {
-                    var Result = consumer.Consume(stoppingToken);
-                    var messageJSON = JsonSerializer.Deserialize<ObjectConfirmed>(Result.Message.Value);
-                    if (messageJSON != null)
-                    {
-                        using var scope = _serviceProvider.CreateScope();
-                        var dbContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
-                        var filter = Builders<FoodProduct>.Filter.Eq(p => p.Id, messageJSON.ObjectId);
-                        var update = Builders<FoodProduct>.Update.Set(p => p.Status, $"Confirmed");
+                    await Task.Delay(100, stoppingToken);
+                    continue;
+                }
 
-                        await dbContext.FoodProducts.UpdateOneAsync(filter, update, cancellationToken: stoppingToken);
+                _logger.LogInformation($"Получено подтверждение: {consumeResult.Message.Value}");
+                var confirmation = JsonSerializer.Deserialize<ConfirmationMessage>(consumeResult.Message.Value);
+                if (confirmation != null)
+                {
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var eventsService = scope.ServiceProvider.GetRequiredService<FoodProductService>();
+                        var ev = await eventsService.GetByIdAsync(confirmation.ObjectId);
+                        if (ev != null)
+                        {
+                            ev.CreatedAt = DateTime.Parse(confirmation.ConfirmationTime);
+                            await eventsService.UpdateAsync(confirmation.ObjectId,ev);
+                            _logger.LogInformation($"Обновлён статус для объекта {confirmation.ObjectId}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Объект с ID {confirmation.ObjectId} не найден");
+                        }
                     }
                 }
             }
-            catch (OperationCanceledException) { consumer.Close(); }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обработке подтверждения");
+                await Task.Delay(500, stoppingToken);
+            }
         }
     }
+
+    public override void Dispose()
+    {
+        _consumer?.Close();
+        _consumer?.Dispose();
+        base.Dispose();
+    }
+}
+
+public class ConfirmationMessage
+{
+    public string ObjectId { get; set; } = string.Empty;
+    public string ConfirmationTime { get; set; } = string.Empty;
 }
