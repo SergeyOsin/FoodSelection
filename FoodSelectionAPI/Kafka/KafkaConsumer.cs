@@ -17,7 +17,7 @@ public class KafkaConsumer : BackgroundService
         _scopeFactory = scopeFactory;
         var config = new ConsumerConfig
         {
-            BootstrapServers = "localhost:9092",
+            BootstrapServers = "kafka:9092",
             GroupId = "foodselection-confirmation-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };

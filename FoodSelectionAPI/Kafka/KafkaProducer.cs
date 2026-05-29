@@ -11,7 +11,7 @@ public class KafkaProducer
     public KafkaProducer(ILogger<KafkaProducer> logger)
     {
         logger = _logger;
-        var config = new ProducerConfig { BootstrapServers = "localhost:9092" };
+        var config = new ProducerConfig { BootstrapServers = "kafka:9092" };
         _producer = new ProducerBuilder<Null, string>(config).Build();
     }
 

@@ -17,14 +17,14 @@ public class KafkaConsumerService : BackgroundService
 
         var consumerConfig = new ConsumerConfig
         {
-            BootstrapServers = "localhost:9092",
+            BootstrapServers = "kafka:9092",
             GroupId = "user-service-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
         _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
         _consumer.Subscribe("object-created-topic");
 
-        var producerConfig = new ProducerConfig { BootstrapServers = "localhost:9092" };
+        var producerConfig = new ProducerConfig { BootstrapServers = "kafka:9092" };
         _producer = new ProducerBuilder<Null, string>(producerConfig).Build();
     }
 
