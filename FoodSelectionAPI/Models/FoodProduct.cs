@@ -10,7 +10,7 @@ public class FoodProduct
     public string? Id { get; set; }
 
     [BsonElement("UserID")]
-    public string UserID { get; set; }
+    public string? UserID { get; set; }
 
     [BsonElement("Status")]
     public string Status { get; set; } = "Pending";

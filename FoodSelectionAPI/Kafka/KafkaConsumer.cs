@@ -22,7 +22,7 @@ public class KafkaConsumer : BackgroundService
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
         _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
-        _consumer.Subscribe("confirmation-topic");
+
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,6 +33,7 @@ public class KafkaConsumer : BackgroundService
         {
             try
             {
+                _consumer.Subscribe("confirmation-topic");
                 var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 if (consumeResult == null)
                 {

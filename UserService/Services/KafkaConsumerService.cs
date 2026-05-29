@@ -22,9 +22,10 @@ public class KafkaConsumerService : BackgroundService
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
         _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
-        _consumer.Subscribe("object-created-topic");
-
         var producerConfig = new ProducerConfig { BootstrapServers = "kafka:9092" };
+
+
+       
         _producer = new ProducerBuilder<Null, string>(producerConfig).Build();
     }
 
@@ -36,6 +37,7 @@ public class KafkaConsumerService : BackgroundService
         {
             try
             {
+                _consumer.Subscribe("object-created-topic");
                 var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 if (consumeResult == null)
                 {
