@@ -32,25 +32,12 @@ services:
     environment:
          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
          KAFKA_ADVERTISED_HOST_NAME: kafka
-         KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+         KAFKA_CREATE_TOPICS: "object-created-topic:1:1,confirmation-topic:1:1"
+    restart: unless-stopped
     networks:
         - app-network
 
-  tests:
-    build:
-      context: .
-      dockerfile: Tests.dockerfile
-    container_name: food-tests
-    depends_on:
-      - mongo
-      - foodservice1
-      - foodservice2
-    networks:
-      - app-network
-    environment:
-      API_BASE_URL: "http://foodservice1:8080/"
-    command: ["dotnet", "test", "FoodSelectionAPITests/FoodSelectionAPITest.csproj"]
-
+  
   prometheus:
     image: prom/prometheus:latest
     container_name: food-prometheus

@@ -1,14 +1,12 @@
-﻿using FoodSelection.Model;
-using FoodSelection.Models;
-using MongoDB.Driver;
-using Microsoft.Extensions.Options;
+﻿using Confluent.Kafka;
 using FoodSelection.Data;
-using System.Diagnostics;
-using Microsoft.Extensions.Caching.Distributed;
-using System.Text.Json;
 using FoodSelection.Metrics;
-using Confluent.Kafka;
-using FoodSelection.Kafka;
+using FoodSelection.Model;
+using FoodSelection.Models;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace FoodSelection.Services;
 
@@ -16,30 +14,16 @@ public class FoodProductService : IFoodProductService
 {
     private readonly IMongoCollection<FoodProduct> _foodProducts;
     private readonly MetricService _foodProductMetrics;
-    private readonly IDistributedCache _distributedCache;
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    public FoodProductService(IOptions<MongoDbSettings> contextDB, MetricService foodProductMetrics,
-        IDistributedCache distributedCache)
+    public FoodProductService(IOptions<MongoDbSettings> contextDB, MetricService foodProductMetrics)
     {
         var mongoDB = new MongoDbContext(contextDB);
         _foodProducts = mongoDB.FoodProducts;
         _foodProductMetrics = foodProductMetrics;
-        _distributedCache = distributedCache;
     }
 
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
     {
-        string cacheKey = "foodproducts:all";
-
-        var cached = await _distributedCache.GetStringAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cached))
-        {
-            _foodProductMetrics.RecordCacheRequest("all_products", isHit: true);
-            return JsonSerializer.Deserialize<List<FoodProductResponseDto>>(cached, JsonOptions) ?? [];
-        }
-
-        _foodProductMetrics.RecordCacheRequest("all_products", isHit: true);
         var count = await _foodProducts.CountDocumentsAsync(_ => true);
         List<FoodProduct> products;
 
@@ -48,31 +32,11 @@ public class FoodProductService : IFoodProductService
         else
             products = await _foodProducts.Aggregate().Sample(1000).As<FoodProduct>().ToListAsync();
 
-        var result = products.Select(MapToResponseDto).ToList();
-
-        await _distributedCache.SetStringAsync(
-            cacheKey,
-            JsonSerializer.Serialize(result, JsonOptions),
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            });
-
-        return result;
+        return products.Select(MapToResponseDto).ToList();
     }
 
     public async Task<List<FoodProductResponseDto>> FilterAsync(FoodProductFilterDto filter)
     {
-        var cacheKey = $"foodproducts:filter:{JsonSerializer.Serialize(filter, JsonOptions)}";
-
-        var cached = await _distributedCache.GetStringAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cached))
-        {
-            _foodProductMetrics.RecordCacheRequest("filter_products", isHit: true);
-            return JsonSerializer.Deserialize<List<FoodProductResponseDto>>(cached, JsonOptions) ?? [];
-        }
-
-        _foodProductMetrics.RecordCacheRequest("filter_products", isHit: false);
         var builder = Builders<FoodProduct>.Filter;
         var filters = new List<FilterDefinition<FoodProduct>>();
 
@@ -99,49 +63,21 @@ public class FoodProductService : IFoodProductService
 
         var filterDefinition = filters.Count > 0 ? builder.And(filters) : builder.Empty;
         var products = await _foodProducts.Find(filterDefinition).ToListAsync();
-        var result = products.Select(MapToResponseDto).ToList();
 
-        await _distributedCache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result, JsonOptions),
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            });
-
-        return result;
+        return products.Select(MapToResponseDto).ToList();
     }
 
     public async Task<FoodProductResponseDto?> GetByIdAsync(string id)
     {
-        var cacheKey = $"foodproducts:id:{id}";
-
-        var cached = await _distributedCache.GetStringAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cached))
-        {
-            _foodProductMetrics.RecordCacheRequest("get_by_id", isHit: true);
-            return JsonSerializer.Deserialize<FoodProductResponseDto>(cached, JsonOptions);
-        }
-
-        _foodProductMetrics.RecordCacheRequest("get_by_id", isHit: false);
         var product = await _foodProducts.Find(p => p.Id == id).FirstOrDefaultAsync();
         if (product == null)
             return null;
 
-        var result = MapToResponseDto(product);
-
-        await _distributedCache.SetStringAsync(
-            cacheKey,
-            JsonSerializer.Serialize(result, JsonOptions),
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(720)
-            });
-
-        return result;
+        return MapToResponseDto(product);
     }
 
     public async Task<FoodProductResponseDto> CreateAsync(FoodProductCreateDto createDto)
     {
-        var stopwatch = Stopwatch.StartNew();
         var product = new FoodProduct
         {
             Name = createDto.Name,
@@ -156,19 +92,17 @@ public class FoodProductService : IFoodProductService
         };
 
         await _foodProducts.InsertOneAsync(product);
-        stopwatch.Stop();
 
         var config = new ProducerConfig { BootstrapServers = "kafka:9092" };
         using var producer = new ProducerBuilder<Null, string>(config).Build();
-
-        var Message = new ObjectCreated(product.Id, product.UserID);
-        var json = JsonSerializer.Serialize(Message);
+        var json = JsonSerializer.Serialize(product);
 
         await producer.ProduceAsync("object-created", new Message<Null, string> { Value = json });
+
         return MapToResponseDto(product);
     }
 
-    public async Task<bool> UpdateAsync(string id, FoodProductCreateDto updateDto)
+    public async Task<bool> UpdateAsync(string id, FoodProductResponseDto updateDto)
     {
         var update = Builders<FoodProduct>.Update
             .Set(p => p.Name, updateDto.Name)
@@ -181,35 +115,19 @@ public class FoodProductService : IFoodProductService
             .Set(p => p.IsVegetarian, updateDto.IsVegetarian);
 
         var result = await _foodProducts.UpdateOneAsync(p => p.Id == id, update);
-
-        if (result.ModifiedCount > 0)
-        {
-            await InvalidateCacheAsync();
-            await _distributedCache.RemoveAsync($"foodproducts:id:{id}");
-        }
         return result.ModifiedCount > 0;
-
     }
 
     public async Task<bool> DeleteAsync(string id)
     {
         var result = await _foodProducts.DeleteOneAsync(p => p.Id == id);
-
-        if (result.DeletedCount > 0)
-        {
-            await InvalidateCacheAsync();
-            await _distributedCache.RemoveAsync($"foodproducts:id:{id}");
-        }
         return result.DeletedCount > 0;
     }
+
     public async Task DeleteAllAsync()
     {
         await _foodProducts.DeleteManyAsync(_ => true);
-        await InvalidateCacheAsync();
     }
-
-    private async Task InvalidateCacheAsync() =>
-        await _distributedCache.RemoveAsync("foodproducts:all");
 
     private FoodProductResponseDto MapToResponseDto(FoodProduct product) =>
         new()
@@ -226,7 +144,3 @@ public class FoodProductService : IFoodProductService
             CreatedAt = product.CreatedAt
         };
 }
-
-
-
-

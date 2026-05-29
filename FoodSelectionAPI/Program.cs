@@ -1,5 +1,5 @@
 using FoodSelection.Data;
-using FoodSelection.Services;
+
 using FoodSelection.Model;
 using FoodSelection.Models;
 using OpenTelemetry.Metrics;
@@ -8,7 +8,9 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Instrumentation.Runtime;
 using Prometheus;
 using FoodSelection.Metrics;
-using FoodSelection.Kafka;
+
+using FoodSelection.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +20,6 @@ builder.Services.Configure<MongoDbSettings>(
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IFoodProductService,FoodProductService>();
 
-builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddSingleton<MetricService>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -26,6 +27,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = "redis:6379";
     options.InstanceName = "food-redis";
 });
+
+
+builder.Services.AddSingleton<KafkaProducer>();
+builder.Services.AddHostedService<KafkaConsumer>();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.

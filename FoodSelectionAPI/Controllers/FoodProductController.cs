@@ -53,7 +53,7 @@ public class FoodProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, [FromBody] FoodProductCreateDto updateDto)
+    public async Task<IActionResult> Update(string id, [FromBody] FoodProduct updateDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

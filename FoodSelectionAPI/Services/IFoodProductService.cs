@@ -9,7 +9,7 @@ namespace FoodSelection.Services
         Task<List<FoodProductResponseDto>> FilterAsync(FoodProductFilterDto filter);
         Task<FoodProductResponseDto?> GetByIdAsync(string id);
         Task<FoodProductResponseDto> CreateAsync(FoodProductCreateDto createDto);
-        Task<bool> UpdateAsync(string id, FoodProductCreateDto updateDto);
+        Task<bool> UpdateAsync(string id, FoodProductResponseDto updateDto);
         Task<bool> DeleteAsync(string id);
         Task DeleteAllAsync();
     }
