@@ -22,7 +22,7 @@ public class KafkaConsumerService : BackgroundService
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
         _consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
-        var producerConfig = new ProducerConfig { BootstrapServers = "kafka:9092" };
+        var producerConfig = new ProducerConfig { BootstrapServers = "localhost:9092" };
 
 
        
@@ -32,12 +32,12 @@ public class KafkaConsumerService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();
-
+        _consumer.Subscribe("object-created-topic");
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                _consumer.Subscribe("object-created-topic");
+               
                 var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 if (consumeResult == null)
                 {

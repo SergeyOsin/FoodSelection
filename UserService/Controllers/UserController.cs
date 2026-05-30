@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using User.Models;
+using UserService.Models;
 
 namespace User.Controllers;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using User.Models;
 [ApiController]
 [Route("api/users")]
@@ -27,17 +28,10 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<User>> Create(User user)
+    public async Task<ActionResult<User>> Create(CreateDTOUser user)
     {
-        var NewUser = new User
-        {
-            Name = "Sergey",
-            RegisteredObjects=0,
-   
-        };
-
-       await _service.CreateAsync(NewUser);
-       return Ok(NewUser);
+       await _service.CreateAsync(user);
+        return Ok(user);
     }
 
     [HttpPut("{id}")]

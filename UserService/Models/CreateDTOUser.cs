@@ -6,6 +6,6 @@ namespace UserService.Models
     {
         [Required(ErrorMessage ="Имя не должно быть пустым!")]
         [StringLength(50, MinimumLength =2)]
-        public string Name { get; set; } = String.Empty;
+        public string? Name { get; set; } = String.Empty;
     }
 }

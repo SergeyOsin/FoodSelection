@@ -12,6 +12,8 @@ namespace FoodSelection.Models
         [Range(0, 1000)]
         public int Calories { get; set; }
 
+        public Guid UserID;
+
         [Range(0, 100)]
         public double Protein { get; set; }
 

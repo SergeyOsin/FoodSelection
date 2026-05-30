@@ -28,12 +28,12 @@ public class KafkaConsumer : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();
-
+        _consumer.Subscribe("confirmation-topic");
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                _consumer.Subscribe("confirmation-topic");
+               
                 var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 if (consumeResult == null)
                 {
