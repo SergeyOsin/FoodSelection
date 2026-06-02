@@ -153,3 +153,5 @@ C:\Users\name\Documents\FoodSelection\UserService\obj\Debug\net8.0\refint\UserSe
 C:\Users\name\Documents\FoodSelection\UserService\obj\Debug\net8.0\UserService.pdb
 C:\Users\name\Documents\FoodSelection\UserService\obj\Debug\net8.0\UserService.genruntimeconfig.cache
 C:\Users\name\Documents\FoodSelection\UserService\obj\Debug\net8.0\ref\UserService.dll
+C:\Users\name\Documents\FoodSelection\UserService\bin\Debug\net8.0\Prometheus.NetStandard.dll
+C:\Users\name\Documents\FoodSelection\UserService\bin\Debug\net8.0\Prometheus.AspNetCore.dll

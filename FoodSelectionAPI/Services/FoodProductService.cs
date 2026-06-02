@@ -124,10 +124,8 @@ public class FoodProductService : IFoodProductService
         return result.DeletedCount > 0;
     }
 
-    public async Task DeleteAllAsync()
-    {
+    public async Task DeleteAllAsync()=>
         await _foodProducts.DeleteManyAsync(_ => true);
-    }
 
     private FoodProductResponseDto MapToResponseDto(FoodProduct product) =>
         new()

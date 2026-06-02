@@ -77,5 +77,15 @@
     "C:\\Users\\name\\.nuget\\packages\\xunit.runner.visualstudio\\3.1.4\\xunit.runner.visualstudio.3.1.4.nupkg.sha512",
     "C:\\Users\\name\\.nuget\\packages\\zstdsharp.port\\0.7.3\\zstdsharp.port.0.7.3.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "message": "Произошла ошибка при получении данных уязвимости пакета: Не удалось загрузить индекс службы для источника https://api.nuget.org/v3/index.json.",
+      "projectPath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionAPITest.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\name\\Documents\\FoodSelection\\FoodSelectionAPITests\\FoodSelectionAPITest.csproj",
+      "targetGraphs": []
+    }
+  ]
 }

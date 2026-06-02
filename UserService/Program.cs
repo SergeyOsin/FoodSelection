@@ -1,17 +1,18 @@
-using User.Controllers;
 using User.Models;
 using UserService.Services;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<DataBase>(
-    builder.Configuration.GetSection("DataBase"));
+builder.Services.Configure<DBSettings>(
+    builder.Configuration.GetSection("DBSettings"));
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<ServiceUser>();
+builder.Services.AddScoped<ServiceUser>();
 builder.Services.AddHostedService<KafkaConsumerService>();
 var app = builder.Build();
 
@@ -21,10 +22,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
+app.UseMetricServer();
+app.UseHttpMetrics();
 app.MapControllers();
 
 app.Run();

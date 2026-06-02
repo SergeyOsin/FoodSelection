@@ -9,11 +9,10 @@ public class ServiceUser
 {
     private readonly IMongoCollection<User> _users;
 
-    public ServiceUser(IOptions<DataBase>dataSet)
+    public ServiceUser(IOptions<DBSettings>dataSet)
     {
-        var client = new MongoClient(dataSet.Value.ConnectionString);
-        var database = client.GetDatabase(dataSet.Value.DatabaseName);
-        _users = database.GetCollection<User>(dataSet.Value.CollectionName);
+        var client = new MongoDBContext(dataSet);
+        _users = client.Users;
     }
 
     public async Task<List<User>> GetAllAsync()=> await _users.Find(_ => true).ToListAsync();

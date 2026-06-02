@@ -56,10 +56,6 @@
               "target": "Package",
               "version": "[2.14.0, )"
             },
-            "MongoDB.Bson": {
-              "target": "Package",
-              "version": "[3.8.1, )"
-            },
             "MongoDB.Driver": {
               "target": "Package",
               "version": "[2.30.0, )"
@@ -71,6 +67,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [

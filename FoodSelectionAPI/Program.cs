@@ -1,11 +1,8 @@
 using FoodSelection.Data;
-
-using FoodSelection.Model;
 using FoodSelection.Models;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Instrumentation.Runtime;
 using Prometheus;
 using FoodSelection.Metrics;
 
@@ -66,7 +63,6 @@ app.UseRouting();
 app.UseHttpMetrics();
 app.UseMetricServer();
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 
 

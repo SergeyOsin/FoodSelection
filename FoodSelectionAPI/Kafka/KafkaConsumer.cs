@@ -17,18 +17,19 @@ public class KafkaConsumer : BackgroundService
         _scopeFactory = scopeFactory;
         var config = new ConsumerConfig
         {
-            BootstrapServers = "kafka:9092",
+            BootstrapServers = "kafka:29092",
             GroupId = "foodselection-confirmation-group",
             AutoOffsetReset = AutoOffsetReset.Earliest
         };
-        _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
 
+        _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();
-        _consumer.Subscribe("confirmation-topic");
+        _logger.LogInformation("Подписка на confirmation-topic успешна");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
