@@ -12,7 +12,7 @@ public class KafkaProducer
     {
         _logger = logger;
         var config = new ProducerConfig { 
-            BootstrapServers = "kafka:9092" 
+            BootstrapServers = "kafka:29092" 
             
         };
         _producer = new ProducerBuilder<Null, string>(config).Build();

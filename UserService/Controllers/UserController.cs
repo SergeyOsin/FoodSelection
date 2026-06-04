@@ -1,23 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
+using User.Models;
 using UserService.Models;
 
 namespace User.Controllers;
 
-using Microsoft.AspNetCore.Http.HttpResults;
-using User.Models;
+using User = User.Models.User;
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
 {
     private readonly ServiceUser _service;
 
-    public UserController(ServiceUser service) => _service = service;
+    public UserController(ServiceUser service)
+    {
+        _service = service;
+    }
 
     [HttpGet]
-    public async Task<ActionResult<List<User>>> GetAll()=>  Ok(await _service.GetAllAsync());
+    public async Task<ActionResult<List<User>>> GetAll()
+    {
+        var users = await _service.GetAllAsync();
+        return Ok(users);
+    }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetById(string id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<User>> GetById(Guid id)
     {
         var user = await _service.GetByIdAsync(id);
 
@@ -28,18 +35,24 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<User>> Create(CreateDTOUser user)
+    public async Task<ActionResult<User>> Create([FromBody] CreateDTOUser userDto)
     {
-       await _service.CreateAsync(user);
-        return Ok(user);
+        var createdUserId = await _service.CreateAsync(userDto);
+
+        var createdUser = await _service.GetByIdAsync(createdUserId);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = createdUserId },
+            createdUser);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, User newUser)
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] User newUser)
     {
-        var user = await _service.GetByIdAsync(id);
+        var existingUser = await _service.GetByIdAsync(id);
 
-        if (user == null)
+        if (existingUser == null)
             return NotFound();
 
         await _service.UpdateAsync(id, newUser);
@@ -47,12 +60,16 @@ public class UserController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(string id)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var user = await _service.GetByIdAsync(id);
-        if (user == null) return NotFound();
+        var existingUser = await _service.GetByIdAsync(id);
+
+        if (existingUser == null)
+            return NotFound();
+
         await _service.DeleteAsync(id);
+
         return NoContent();
     }
 }

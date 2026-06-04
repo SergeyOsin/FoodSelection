@@ -81,6 +81,7 @@ public class FoodProductService : IFoodProductService
         var product = new FoodProduct
         {
             Name = createDto.Name,
+            UserID=createDto.UserID,
             Calories = createDto.Calories,
             Protein = createDto.Protein,
             Carbs = createDto.Carbs,

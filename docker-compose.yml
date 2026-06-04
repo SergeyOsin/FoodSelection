@@ -9,34 +9,44 @@ services:
     networks:
       - app-network
 
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    networks:
-      - app-network
-    restart: unless-stopped
 
   kafka:
-    image: wurstmeister/kafka:latest
+    image: confluentinc/cp-kafka:latest
     container_name: kafka
-    depends_on:
-      - zookeeper
     ports:
+      - "9092:9092"
       - "29092:29092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
-      KAFKA_CREATE_TOPICS: "object-created-topic:1:1,confirmation-topic:1:1"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     restart: unless-stopped
     networks:
       - app-network
 
+  kafka-setup:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-setup
+    depends_on:
+      - kafka
+    networks:
+      - app-network
+    command: >
+      bash -c "
+        echo 'Ожидание запуска Kafka...'
+        cub kafka-ready -b kafka:29092 1 40
+        echo 'Создание топиков...'
+        kafka-topics --create --if-not-exists --topic object-created-topic --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
+        kafka-topics --create --if-not-exists --topic confirmation-topic --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
+        echo 'Топики успешно созданы!'
+      "
 
   foodservice1:
     build:
@@ -52,8 +62,12 @@ services:
       Kafka__BootstrapServers: "kafka:29092"
     restart: unless-stopped
     depends_on:
-      - redis
-      - mongo
+      kafka-setup:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - app-network
 
@@ -62,15 +76,18 @@ services:
       context: ./UserService
       dockerfile: User.dockerfile
     container_name: User-Service
-    depends_on:
-      - mongo
     ports:
       - "7211:8080"
     environment:
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_ENVIRONMENT: "Development"
-      Kafka__BootstrapServers: "kafka:9092"
+      Kafka__BootstrapServers: "kafka:29092"
     restart: unless-stopped
+    depends_on:
+      kafka-setup:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
     networks:
       - app-network
   
