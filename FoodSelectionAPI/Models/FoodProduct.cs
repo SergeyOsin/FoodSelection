@@ -9,8 +9,8 @@ public class FoodProduct
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
 
-    [BsonElement("UserID")]
-    public Guid? UserID { get; set; }
+    [BsonGuidRepresentation(GuidRepresentation.Standard)]
+    public Guid UserID { get; set; }
 
     [BsonElement("Status")]
     public string Status { get; set; } = "Pending";
