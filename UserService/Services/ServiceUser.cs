@@ -33,13 +33,12 @@ public class ServiceUser
         return newUser.Id;
     }
 
-    public async Task UpdateAsync(Guid id, User newUser)
+    public async Task UpdateAsync(Guid id, string newName)
     {
-        newUser.Id = id;
+        var update = Builders<User>.Update
+            .Set(x => x.Name, newName);
 
-        await _users.ReplaceOneAsync(
-            x => x.Id == id,
-            newUser);
+        await _users.UpdateOneAsync(x => x.Id == id, update);
     }
 
     public async Task DeleteAsync(Guid id) =>
@@ -53,5 +52,19 @@ public class ServiceUser
         await _users.UpdateOneAsync(
             x => x.Id == userId,
             update);
+    }
+
+    public async Task DecrementRegisteredObjects(Guid userId)
+    {
+        var delete = Builders<User>.Update.Inc(x=>x.RegisteredObjects, -1);
+        await _users.UpdateOneAsync(x => x.Id == userId, delete);
+    }
+    
+    public async Task ResetAllRegisteredObjectsAsync()
+    {
+        var filter = Builders<User>.Filter.Gt(x => x.RegisteredObjects, 0);
+        var update = Builders<User>.Update.Set(x => x.RegisteredObjects, 0);
+    
+        await _users.UpdateManyAsync(filter, update);
     }
 }

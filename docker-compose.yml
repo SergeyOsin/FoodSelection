@@ -9,44 +9,35 @@ services:
     networks:
       - app-network
 
-
   kafka:
-    image: confluentinc/cp-kafka:7.8.0
+    image: apache/kafka:3.7.0
     container_name: kafka
     ports:
-      - "9092:9092"
+      - "9092:9092"      
+      - "29092:29092"     
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: ""
-      KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true" 
+    
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     restart: unless-stopped
     networks:
       - app-network
 
-  kafka-setup:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-setup
-    depends_on:
-      - kafka
-    networks:
-      - app-network
-    command: >
-      bash -c "
-        echo 'Ожидание запуска Kafka...'
-        cub kafka-ready -b kafka:29092 1 40
-        echo 'Создание топиков...'
-        kafka-topics --create --if-not-exists --topic object-created-topic --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
-        kafka-topics --create --if-not-exists --topic confirmation-topic --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1
-        echo 'Топики успешно созданы!'
-      "
 
   foodservice1:
     build:
@@ -62,12 +53,9 @@ services:
       Kafka__BootstrapServers: "kafka:29092"
     restart: unless-stopped
     depends_on:
-      kafka-setup:
-        condition: service_completed_successfully
-      mongo:
-        condition: service_started
-      redis:
-        condition: service_started
+      - kafka      
+      - mongo
+      - redis
     networks:
       - app-network
 
@@ -84,10 +72,8 @@ services:
       Kafka__BootstrapServers: "kafka:29092"
     restart: unless-stopped
     depends_on:
-      kafka-setup:
-        condition: service_completed_successfully
-      mongo:
-        condition: service_started
+      - kafka
+      - mongo
     networks:
       - app-network
   
@@ -126,7 +112,7 @@ services:
 
 volumes:
   mongo_data:
-  prometheus_data:
+  kafka_data:        
   grafana_data:
   redis_data:
 

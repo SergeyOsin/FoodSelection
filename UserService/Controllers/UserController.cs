@@ -11,10 +11,7 @@ public class UserController : ControllerBase
 {
     private readonly ServiceUser _service;
 
-    public UserController(ServiceUser service)
-    {
-        _service = service;
-    }
+    public UserController(ServiceUser service) => _service = service;
 
     [HttpGet]
     public async Task<ActionResult<List<User>>> GetAll()
@@ -55,7 +52,7 @@ public class UserController : ControllerBase
         if (existingUser == null)
             return NotFound();
 
-        await _service.UpdateAsync(id, newUser);
+        await _service.UpdateAsync(id, newUser.Name);
 
         return NoContent();
     }
@@ -70,6 +67,7 @@ public class UserController : ControllerBase
 
         await _service.DeleteAsync(id);
 
-        return NoContent();
+        return Ok("Delete successful");
     }
+    
 }
