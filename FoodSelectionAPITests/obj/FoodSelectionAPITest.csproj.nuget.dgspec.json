@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj": {}
+    "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj": {}
   },
   "projects": {
-    "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj": {
+    "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj",
+        "projectUniqueName": "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj",
         "projectName": "FoodSelection",
-        "projectPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj",
+        "projectPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj",
         "packagesPath": "/Users/sergeyosin/.nuget/packages/",
-        "outputPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/obj/",
+        "outputPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/sergeyosin/.nuget/NuGet/NuGet.Config"
@@ -24,7 +24,6 @@
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -42,7 +41,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "App.Metrics.Abstractions": {
@@ -117,14 +115,14 @@
         }
       }
     },
-    "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj": {
+    "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
+        "projectUniqueName": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
         "projectName": "FoodSelectionAPITest",
-        "projectPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
+        "projectPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
         "packagesPath": "/Users/sergeyosin/.nuget/packages/",
-        "outputPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/obj/",
+        "outputPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/sergeyosin/.nuget/NuGet/NuGet.Config"
@@ -137,11 +135,10 @@
         },
         "frameworks": {
           "net8.0": {
-            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj": {
-                "projectPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj"
+              "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj": {
+                "projectPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj"
               }
             }
           }
@@ -159,7 +156,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.NET.Test.Sdk": {

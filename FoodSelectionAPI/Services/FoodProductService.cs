@@ -6,6 +6,7 @@ using FoodSelection.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Diagnostics;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace FoodSelection.Services;
@@ -15,16 +16,19 @@ public class FoodProductService : IFoodProductService
     private readonly IMongoCollection<FoodProduct> _foodProducts;
     private readonly MetricService _foodProductMetrics;
     private readonly IProducer<Null, string> _kafkaProducer;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public FoodProductService(
         IOptions<MongoDbSettings> contextDB, 
         MetricService foodProductMetrics, 
-        IProducer<Null, string> kafkaProducer) 
+        IProducer<Null, string> kafkaProducer,
+        IHttpClientFactory httpClientFactory)
     {
         var mongoDB = new MongoDbContext(contextDB);
         _foodProducts = mongoDB.FoodProducts;
         _foodProductMetrics = foodProductMetrics;
         _kafkaProducer = kafkaProducer;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
@@ -83,10 +87,20 @@ public class FoodProductService : IFoodProductService
 
     public async Task<FoodProductResponseDto> CreateAsync(FoodProductCreateDto createDto)
     {
+        if (createDto.UserID == Guid.Empty)
+            throw new ArgumentException("UserID must be a valid user ID.", nameof(createDto));
+
+        var userClient = _httpClientFactory.CreateClient("UserService");
+        var user = await userClient.GetFromJsonAsync<UserServiceUser>($"api/users/{createDto.UserID}");
+        if (user is null || string.IsNullOrWhiteSpace(user.Name))
+            throw new InvalidOperationException($"User {createDto.UserID} was not found or has no name.");
+
         var product = new FoodProduct
         {
             Name = createDto.Name,
             UserID = createDto.UserID,
+            UserName = user.Name,
+            Status = "Pending",
             Calories = createDto.Calories,
             Protein = createDto.Protein,
             Carbs = createDto.Carbs,
@@ -94,7 +108,8 @@ public class FoodProductService : IFoodProductService
             Category = createDto.Category,
             IsVegan = createDto.IsVegan,
             IsVegetarian = createDto.IsVegetarian,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ConfirmationTime = null
         };
 
         await _foodProducts.InsertOneAsync(product);
@@ -134,6 +149,16 @@ public class FoodProductService : IFoodProductService
 
         var result = await _foodProducts.UpdateOneAsync(p => p.Id == id, update);
         return result.ModifiedCount > 0;
+    }
+
+    public async Task<bool> ConfirmAsync(string id, DateTimeOffset confirmationTime)
+    {
+        var update = Builders<FoodProduct>.Update
+            .Set(p => p.Status, "Confirmed")
+            .Set(p => p.ConfirmationTime, confirmationTime.UtcDateTime);
+
+        var result = await _foodProducts.UpdateOneAsync(p => p.Id == id, update);
+        return result.MatchedCount > 0;
     }
 
     public async Task<bool> DeleteAsync(string id)
@@ -188,7 +213,10 @@ public class FoodProductService : IFoodProductService
     private FoodProductResponseDto MapToResponseDto(FoodProduct product) =>
         new()
         {
+            Id = product.Id,
             Name = product.Name,
+            UserName = product.UserName,
+            Status = product.Status,
             Calories = product.Calories,
             Protein = product.Protein,
             Carbs = product.Carbs,
@@ -196,6 +224,12 @@ public class FoodProductService : IFoodProductService
             Category = product.Category,
             IsVegan = product.IsVegan,
             IsVegetarian = product.IsVegetarian,
-            CreatedAt = product.CreatedAt
+            CreatedAt = product.CreatedAt,
+            ConfirmationTime = product.ConfirmationTime
         };
+
+    private sealed class UserServiceUser
+    {
+        public string Name { get; set; } = string.Empty;
+    }
 }

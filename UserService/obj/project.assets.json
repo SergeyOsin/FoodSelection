@@ -1867,11 +1867,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/sergeyosin/FoodSelection/UserService/UserService.csproj",
+      "projectUniqueName": "/Users/sergeyosin/SOTRPS/UserService/UserService.csproj",
       "projectName": "UserService",
-      "projectPath": "/Users/sergeyosin/FoodSelection/UserService/UserService.csproj",
+      "projectPath": "/Users/sergeyosin/SOTRPS/UserService/UserService.csproj",
       "packagesPath": "/Users/sergeyosin/.nuget/packages/",
-      "outputPath": "/Users/sergeyosin/FoodSelection/UserService/obj/",
+      "outputPath": "/Users/sergeyosin/SOTRPS/UserService/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/sergeyosin/.nuget/NuGet/NuGet.Config"
@@ -1884,7 +1884,6 @@
       },
       "frameworks": {
         "net8.0": {
-          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -1902,7 +1901,6 @@
     },
     "frameworks": {
       "net8.0": {
-        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Confluent.Kafka": {

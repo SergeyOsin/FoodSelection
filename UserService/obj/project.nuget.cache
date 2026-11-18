@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nxmL4znONmc=",
+  "dgSpecHash": "To4jHMeHysA=",
   "success": true,
-  "projectFilePath": "/Users/sergeyosin/FoodSelection/UserService/UserService.csproj",
+  "projectFilePath": "/Users/sergeyosin/SOTRPS/UserService/UserService.csproj",
   "expectedPackageFiles": [
     "/Users/sergeyosin/.nuget/packages/awssdk.core/3.7.100.14/awssdk.core.3.7.100.14.nupkg.sha512",
     "/Users/sergeyosin/.nuget/packages/awssdk.securitytoken/3.7.100.14/awssdk.securitytoken.3.7.100.14.nupkg.sha512",

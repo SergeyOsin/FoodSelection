@@ -16,6 +16,10 @@ public class KafkaConsumer : BackgroundService
     private readonly ILogger<KafkaConsumer> _logger;
     private readonly IConsumer<Ignore, string> _consumer;
     private readonly IServiceScopeFactory _scopeFactory;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     public KafkaConsumer(ILogger<KafkaConsumer> logger, IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
@@ -29,7 +33,8 @@ public class KafkaConsumer : BackgroundService
             BootstrapServers = bootstrapServers,
             GroupId = "foodselection-confirmation-group",
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            AllowAutoCreateTopics = true 
+            AllowAutoCreateTopics = true,
+            EnableAutoCommit = false
         };
 
         _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
@@ -54,33 +59,47 @@ public class KafkaConsumer : BackgroundService
                     continue;
                 }
 
-                _logger.LogInformation($"Получено подтверждение: {consumeResult.Message.Value}");
-                var confirmation = JsonSerializer.Deserialize<ConfirmationMessage>(consumeResult.Message.Value);
-                if (confirmation != null)
+                ConfirmationMessage? confirmation;
+                try
                 {
-                    using (var scope = _scopeFactory.CreateScope())
-                    {
-                        var eventsService = scope.ServiceProvider.GetRequiredService<FoodProductService>();
-                        var ev = await eventsService.GetByIdAsync(confirmation.ObjectId);
-                        if (ev != null)
-                        {
-                            ev.CreatedAt = DateTime.Parse(confirmation.ConfirmationTime);
-                            await eventsService.UpdateAsync(confirmation.ObjectId, ev);
-                            _logger.LogInformation($"Обновлён статус для объекта {confirmation.ObjectId}");
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Объект с ID {confirmation.ObjectId} не найден");
-                        }
-                    }
+                    confirmation = JsonSerializer.Deserialize<ConfirmationMessage>(
+                        consumeResult.Message.Value,
+                        JsonOptions);
                 }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Получено некорректное JSON-сообщение подтверждения");
+                    _consumer.Commit(consumeResult);
+                    continue;
+                }
+
+                if (confirmation is null ||
+                    string.IsNullOrWhiteSpace(confirmation.ObjectId) ||
+                    confirmation.ConfirmationTime == default)
+                {
+                    _logger.LogWarning("Получено некорректное сообщение подтверждения: {Message}", consumeResult.Message.Value);
+                    _consumer.Commit(consumeResult);
+                    continue;
+                }
+
+                _logger.LogInformation("Получено подтверждение объекта {ObjectId}", confirmation.ObjectId);
+                using var scope = _scopeFactory.CreateScope();
+                var foodProductService = scope.ServiceProvider.GetRequiredService<IFoodProductService>();
+                var confirmed = await foodProductService.ConfirmAsync(
+                    confirmation.ObjectId,
+                    confirmation.ConfirmationTime);
+
+                if (confirmed)
+                    _logger.LogInformation("Сохранено подтверждение объекта {ObjectId}", confirmation.ObjectId);
+                else
+                    _logger.LogWarning("Объект с ID {ObjectId} не найден", confirmation.ObjectId);
+
+                _consumer.Commit(consumeResult);
             }
-            // ВАЖНО: Ловим специфичную ошибку Kafka!
             catch (ConsumeException ex)
             {
                 if (ex.Error.Code == Confluent.Kafka.ErrorCode.UnknownTopicOrPart)
                 {
-                    // Топик еще создается, это нормально. Не пишем Error, просто ждем.
                     _logger.LogWarning("Kafka: Топик confirmation-topic еще не готов. Ждем...");
                 }
                 else
@@ -112,5 +131,5 @@ public class KafkaConsumer : BackgroundService
 public class ConfirmationMessage
 {
     public string ObjectId { get; set; } = string.Empty;
-    public string ConfirmationTime { get; set; } = string.Empty;
+    public DateTimeOffset ConfirmationTime { get; set; }
 }

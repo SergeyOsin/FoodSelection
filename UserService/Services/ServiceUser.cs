@@ -20,19 +20,6 @@ public class ServiceUser
     public async Task<User?> GetByIdAsync(Guid id) =>
         await _users.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-    public async Task<Guid> CreateAsync(CreateDTOUser user)
-    {
-        var newUser = new User
-        {
-            Id = Guid.NewGuid(),
-            Name = user?.Name ?? "Unknown",
-            RegisteredObjects = 0
-        };
-
-        await _users.InsertOneAsync(newUser);
-        return newUser.Id;
-    }
-
     public async Task UpdateAsync(Guid id, string newName)
     {
         var update = Builders<User>.Update

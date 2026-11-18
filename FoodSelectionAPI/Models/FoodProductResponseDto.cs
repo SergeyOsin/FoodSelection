@@ -10,6 +10,8 @@ namespace FoodSelection.Model
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public int Calories { get; set; }
         public double Protein { get; set; }
         public double Carbs { get; set; }
@@ -18,5 +20,6 @@ namespace FoodSelection.Model
         public bool IsVegan { get; set; }
         public bool IsVegetarian { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? ConfirmationTime { get; set; }
     }
 }

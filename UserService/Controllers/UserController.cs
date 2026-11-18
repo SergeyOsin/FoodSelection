@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using User.Models;
-using UserService.Models;
 
 namespace User.Controllers;
 
@@ -29,19 +28,6 @@ public class UserController : ControllerBase
             return NotFound();
 
         return Ok(user);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<User>> Create([FromBody] CreateDTOUser userDto)
-    {
-        var createdUserId = await _service.CreateAsync(userDto);
-
-        var createdUser = await _service.GetByIdAsync(createdUserId);
-
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = createdUserId },
-            createdUser);
     }
 
     [HttpPut("{id:guid}")]

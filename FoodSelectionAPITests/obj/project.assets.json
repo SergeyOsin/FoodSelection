@@ -3901,11 +3901,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
+      "projectUniqueName": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
       "projectName": "FoodSelectionAPITest",
-      "projectPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
+      "projectPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
       "packagesPath": "/Users/sergeyosin/.nuget/packages/",
-      "outputPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/obj/",
+      "outputPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/sergeyosin/.nuget/NuGet/NuGet.Config"
@@ -3921,8 +3921,8 @@
           "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj": {
-              "projectPath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPI/FoodSelection.csproj"
+            "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj": {
+              "projectPath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPI/FoodSelection.csproj"
             }
           }
         }

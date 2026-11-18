@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "vRud+lBGwIo=",
+  "dgSpecHash": "4odKH0UemMQ=",
   "success": true,
-  "projectFilePath": "/Users/sergeyosin/FoodSelection/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
+  "projectFilePath": "/Users/sergeyosin/SOTRPS/FoodSelectionAPITests/FoodSelectionAPITest.csproj",
   "expectedPackageFiles": [
     "/Users/sergeyosin/.nuget/packages/app.metrics.abstractions/4.3.0/app.metrics.abstractions.4.3.0.nupkg.sha512",
     "/Users/sergeyosin/.nuget/packages/confluent.kafka/2.14.0/confluent.kafka.2.14.0.nupkg.sha512",
