@@ -17,6 +17,11 @@ builder.Services.Configure<MongoDbSettings>(
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IFoodProductService,FoodProductService>();
+builder.Services.AddHttpClient("UserService", client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["UserService:BaseUrl"] ?? "http://user-service:8080/");
+});
 
 builder.Services.AddSingleton<MetricService>();
 
@@ -73,9 +78,6 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseHttpMetrics();
 app.UseMetricServer();
-
-app.UseAuthorization();
-
 
 app.MapControllers();
 

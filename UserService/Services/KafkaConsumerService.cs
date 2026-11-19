@@ -31,7 +31,8 @@ public class KafkaConsumerService : BackgroundService
             BootstrapServers = "kafka:29092",
             GroupId = "user-service-group",
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            AllowAutoCreateTopics = true
+            AllowAutoCreateTopics = true,
+            EnableAutoCommit = false
         }).Build();
 
         _producer = new ProducerBuilder<Null, string>(new ProducerConfig
@@ -65,19 +66,32 @@ public class KafkaConsumerService : BackgroundService
                 {
                     await userService.ResetAllRegisteredObjectsAsync();
                     _logger.LogInformation("Обнулены все RegisteredObjects");
+                    _consumer.Commit(consumeResult);
                     continue;
                 }
 
                 var kafkaEvent = JsonSerializer.Deserialize<KafkaEvent>(consumeResult.Message.Value, _jsonOptions);
                 if (kafkaEvent == null || string.IsNullOrEmpty(kafkaEvent.UserID))
+                {
+                    _logger.LogWarning("Получено некорректное событие из {Topic}", topic);
+                    _consumer.Commit(consumeResult);
                     continue;
+                }
 
                 if (!Guid.TryParse(kafkaEvent.UserID, out var userId))
+                {
+                    _logger.LogWarning("Некорректный UserID в событии {ObjectId}", kafkaEvent.Id);
+                    _consumer.Commit(consumeResult);
                     continue;
+                }
 
                 var user = await userService.GetByIdAsync(userId);
                 if (user == null)
+                {
+                    _logger.LogWarning("Пользователь {UserId} из события не найден", userId);
+                    _consumer.Commit(consumeResult);
                     continue;
+                }
 
                 if (topic == "object-created-topic")
                     await userService.IncrementRegisteredObjects(userId);
@@ -87,6 +101,7 @@ public class KafkaConsumerService : BackgroundService
                 var response = new { ObjectId = kafkaEvent.Id, ConfirmationTime = DateTime.UtcNow.ToString("o") };
                 await _producer.ProduceAsync("confirmation-topic",
                     new Message<Null, string> { Value = JsonSerializer.Serialize(response) }, stoppingToken);
+                _consumer.Commit(consumeResult);
             }
             catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
             {

@@ -12,6 +12,9 @@ public class FoodProduct
     [BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid UserID { get; set; }
 
+    [BsonElement("UserName")]
+    public string UserName { get; set; } = string.Empty;
+
     [BsonElement("Status")]
     public string Status { get; set; } = "Pending";
 
@@ -41,4 +44,7 @@ public class FoodProduct
 
     [BsonElement("CreatedAt")]
     public DateTime CreatedAt { get; set; }
+
+    [BsonElement("ConfirmationTime")]
+    public DateTime? ConfirmationTime { get; set; }
 }
