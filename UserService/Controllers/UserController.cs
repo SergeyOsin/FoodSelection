@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using User.Models;
 
 namespace User.Controllers;
 
 using User = User.Models.User;
 [ApiController]
+[Authorize]
 [Route("api/users")]
 public class UserController : ControllerBase
 {

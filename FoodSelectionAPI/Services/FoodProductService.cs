@@ -17,18 +17,21 @@ public class FoodProductService : IFoodProductService
     private readonly MetricService _foodProductMetrics;
     private readonly IProducer<Null, string> _kafkaProducer;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public FoodProductService(
         IOptions<MongoDbSettings> contextDB, 
         MetricService foodProductMetrics, 
         IProducer<Null, string> kafkaProducer,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IHttpContextAccessor httpContextAccessor)
     {
         var mongoDB = new MongoDbContext(contextDB);
         _foodProducts = mongoDB.FoodProducts;
         _foodProductMetrics = foodProductMetrics;
         _kafkaProducer = kafkaProducer;
         _httpClientFactory = httpClientFactory;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
@@ -90,8 +93,18 @@ public class FoodProductService : IFoodProductService
         if (createDto.UserID == Guid.Empty)
             throw new ArgumentException("UserID must be a valid user ID.", nameof(createDto));
 
+        var authorizationHeader = _httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
+        if (string.IsNullOrWhiteSpace(authorizationHeader))
+            throw new InvalidOperationException("The caller's bearer token is required to validate the user.");
+
         var userClient = _httpClientFactory.CreateClient("UserService");
-        var user = await userClient.GetFromJsonAsync<UserServiceUser>($"api/users/{createDto.UserID}");
+        using var userRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"api/users/{createDto.UserID}");
+        userRequest.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+        using var userResponse = await userClient.SendAsync(userRequest);
+        userResponse.EnsureSuccessStatusCode();
+        var user = await userResponse.Content.ReadFromJsonAsync<UserServiceUser>();
         if (user is null || string.IsNullOrWhiteSpace(user.Name))
             throw new InvalidOperationException($"User {createDto.UserID} was not found or has no name.");
 

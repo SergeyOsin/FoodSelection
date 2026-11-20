@@ -1,12 +1,14 @@
 using FoodSelection.Model;
 using FoodSelection.Models;
 using FoodSelection.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 
 namespace FoodSelection.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class FoodProductController : ControllerBase
 {

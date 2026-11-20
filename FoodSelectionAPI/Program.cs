@@ -1,3 +1,4 @@
+using System.Text;
 using FoodSelection.Data;
 using FoodSelection.Models;
 using OpenTelemetry.Metrics;
@@ -8,9 +9,34 @@ using FoodSelection.Metrics;
 using Confluent.Kafka;
 
 using FoodSelection.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Jwt:Key must be configured with at least 32 bytes.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "FoodSelection",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "FoodSelectionClients",
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings"));
@@ -76,6 +102,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseHttpMetrics();
 app.UseMetricServer();
 
