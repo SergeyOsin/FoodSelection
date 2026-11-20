@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using User.Models;
 
@@ -21,14 +22,17 @@ public class KafkaConsumerService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public KafkaConsumerService(ILogger<KafkaConsumerService> logger, IServiceScopeFactory scopeFactory)
+    public KafkaConsumerService(
+        ILogger<KafkaConsumerService> logger,
+        IServiceScopeFactory scopeFactory,
+        IConfiguration configuration)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
 
         _consumer = new ConsumerBuilder<Ignore, string>(new ConsumerConfig
         {
-            BootstrapServers = "kafka:29092",
+            BootstrapServers = configuration["Kafka:BootstrapServers"] ?? "kafka:29092",
             GroupId = "user-service-group",
             AutoOffsetReset = AutoOffsetReset.Earliest,
             AllowAutoCreateTopics = true,
@@ -37,7 +41,9 @@ public class KafkaConsumerService : BackgroundService
 
         _producer = new ProducerBuilder<Null, string>(new ProducerConfig
         {
-            BootstrapServers = "kafka:29092"
+            BootstrapServers = configuration["Kafka:BootstrapServers"] ?? "kafka:29092",
+            Acks = Acks.All,
+            EnableIdempotence = true
         }).Build();
     }
 
@@ -48,9 +54,10 @@ public class KafkaConsumerService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            ConsumeResult<Ignore, string>? consumeResult = null;
             try
             {
-                var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
+                consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 if (consumeResult == null)
                 {
                     await Task.Delay(100, stoppingToken);
@@ -71,7 +78,9 @@ public class KafkaConsumerService : BackgroundService
                 }
 
                 var kafkaEvent = JsonSerializer.Deserialize<KafkaEvent>(consumeResult.Message.Value, _jsonOptions);
-                if (kafkaEvent == null || string.IsNullOrEmpty(kafkaEvent.UserID))
+                if (kafkaEvent == null ||
+                    string.IsNullOrWhiteSpace(kafkaEvent.Id) ||
+                    string.IsNullOrWhiteSpace(kafkaEvent.UserID))
                 {
                     _logger.LogWarning("Получено некорректное событие из {Topic}", topic);
                     _consumer.Commit(consumeResult);
@@ -89,18 +98,33 @@ public class KafkaConsumerService : BackgroundService
                 if (user == null)
                 {
                     _logger.LogWarning("Пользователь {UserId} из события не найден", userId);
-                    _consumer.Commit(consumeResult);
+                    _consumer.Seek(consumeResult.TopicPartitionOffset);
+                    await Task.Delay(1000, stoppingToken);
                     continue;
                 }
 
                 if (topic == "object-created-topic")
-                    await userService.IncrementRegisteredObjects(userId);
-                else if (topic == "object-deleted-topic")
-                    await userService.DecrementRegisteredObjects(userId);
+                {
+                    await userService.RegisterObject(userId, kafkaEvent.Id);
+                    ConfirmationMetrics.Record("request_processed");
 
-                var response = new { ObjectId = kafkaEvent.Id, ConfirmationTime = DateTime.UtcNow.ToString("o") };
-                await _producer.ProduceAsync("confirmation-topic",
-                    new Message<Null, string> { Value = JsonSerializer.Serialize(response) }, stoppingToken);
+                    var response = new
+                    {
+                        ObjectId = kafkaEvent.Id,
+                        ConfirmationTime = DateTimeOffset.UtcNow.ToString("O")
+                    };
+                    await _producer.ProduceAsync(
+                        "confirmation-topic",
+                        new Message<Null, string>
+                        {
+                            Value = JsonSerializer.Serialize(response)
+                        },
+                        stoppingToken);
+                    ConfirmationMetrics.Record("response_published");
+                }
+                else if (topic == "object-deleted-topic")
+                    await userService.UnregisterObject(userId, kafkaEvent.Id);
+
                 _consumer.Commit(consumeResult);
             }
             catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.UnknownTopicOrPart)
@@ -114,6 +138,8 @@ public class KafkaConsumerService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при обработке");
+                if (consumeResult is not null)
+                    _consumer.Seek(consumeResult.TopicPartitionOffset);
                 await Task.Delay(1000, stoppingToken);
             }
         }

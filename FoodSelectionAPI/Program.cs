@@ -17,11 +17,6 @@ builder.Services.Configure<MongoDbSettings>(
 
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IFoodProductService,FoodProductService>();
-builder.Services.AddHttpClient("UserService", client =>
-{
-    client.BaseAddress = new Uri(
-        builder.Configuration["UserService:BaseUrl"] ?? "http://user-service:8080/");
-});
 
 builder.Services.AddSingleton<MetricService>();
 
@@ -37,13 +32,16 @@ builder.Services.AddSingleton<IProducer<Null, string>>(sp =>
     var config = new ProducerConfig
     {
         BootstrapServers = builder.Configuration["Kafka:BootstrapServers"] ?? "kafka:29092",
-        MessageTimeoutMs = 10000
+        MessageTimeoutMs = 10000,
+        Acks = Acks.All,
+        EnableIdempotence = true
     };
     
     return new ProducerBuilder<Null, string>(config).Build();
 });
 
 builder.Services.AddHostedService<KafkaConsumer>();
+builder.Services.AddHostedService<ConfirmationRequestPublisher>();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resourse=>resourse.

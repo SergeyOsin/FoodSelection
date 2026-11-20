@@ -47,4 +47,7 @@ public class FoodProduct
 
     [BsonElement("ConfirmationTime")]
     public DateTime? ConfirmationTime { get; set; }
+
+    [BsonElement("ConfirmationRequestPublished")]
+    public bool ConfirmationRequestPublished { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using FoodSelection.Metrics;
 using System.Text.Json;
 using FoodSelection.Services;
 using Microsoft.Extensions.Configuration; 
@@ -49,9 +50,10 @@ public class KafkaConsumer : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            ConsumeResult<Ignore, string>? consumeResult = null;
             try
             {
-                var consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
+                consumeResult = _consumer.Consume(TimeSpan.FromMilliseconds(500));
                 
                 if (consumeResult == null)
                 {
@@ -90,7 +92,10 @@ public class KafkaConsumer : BackgroundService
                     confirmation.ConfirmationTime);
 
                 if (confirmed)
+                {
+                    ConfirmationMetrics.Record("confirmation_received");
                     _logger.LogInformation("Сохранено подтверждение объекта {ObjectId}", confirmation.ObjectId);
+                }
                 else
                     _logger.LogWarning("Объект с ID {ObjectId} не найден", confirmation.ObjectId);
 
@@ -115,6 +120,8 @@ public class KafkaConsumer : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Критическая ошибка при обработке подтверждения");
+                if (consumeResult is not null)
+                    _consumer.Seek(consumeResult.TopicPartitionOffset);
                 await Task.Delay(1000, stoppingToken); 
             }
         }

@@ -1,12 +1,10 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using FoodSelection.Data;
 using FoodSelection.Metrics;
 using FoodSelection.Model;
 using FoodSelection.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using System.Diagnostics;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace FoodSelection.Services;
@@ -16,19 +14,19 @@ public class FoodProductService : IFoodProductService
     private readonly IMongoCollection<FoodProduct> _foodProducts;
     private readonly MetricService _foodProductMetrics;
     private readonly IProducer<Null, string> _kafkaProducer;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<FoodProductService> _logger;
 
     public FoodProductService(
         IOptions<MongoDbSettings> contextDB, 
-        MetricService foodProductMetrics, 
+        MetricService foodProductMetrics,
         IProducer<Null, string> kafkaProducer,
-        IHttpClientFactory httpClientFactory)
+        ILogger<FoodProductService> logger)
     {
         var mongoDB = new MongoDbContext(contextDB);
         _foodProducts = mongoDB.FoodProducts;
         _foodProductMetrics = foodProductMetrics;
         _kafkaProducer = kafkaProducer;
-        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task<List<FoodProductResponseDto>> GetAllAsync()
@@ -90,16 +88,11 @@ public class FoodProductService : IFoodProductService
         if (createDto.UserID == Guid.Empty)
             throw new ArgumentException("UserID must be a valid user ID.", nameof(createDto));
 
-        var userClient = _httpClientFactory.CreateClient("UserService");
-        var user = await userClient.GetFromJsonAsync<UserServiceUser>($"api/users/{createDto.UserID}");
-        if (user is null || string.IsNullOrWhiteSpace(user.Name))
-            throw new InvalidOperationException($"User {createDto.UserID} was not found or has no name.");
-
         var product = new FoodProduct
         {
             Name = createDto.Name,
             UserID = createDto.UserID,
-            UserName = user.Name,
+            UserName = string.Empty,
             Status = "Pending",
             Calories = createDto.Calories,
             Protein = createDto.Protein,
@@ -113,23 +106,31 @@ public class FoodProductService : IFoodProductService
         };
 
         await _foodProducts.InsertOneAsync(product);
-
-        var kafkaEvent = new
-        {
-            Id = product.Id,
-            UserID = product.UserID
-        };
-        var json = JsonSerializer.Serialize(kafkaEvent);
+        _foodProductMetrics.ProductCreated(product.Category);
+        ConfirmationMetrics.Record("object_created");
 
         try
         {
+            var message = JsonSerializer.Serialize(new
+            {
+                Id = product.Id,
+                UserID = product.UserID
+            });
+
             await _kafkaProducer.ProduceAsync(
-                "object-created-topic", 
-                new Message<Null, string> { Value = json });
+                "object-created-topic",
+                new Message<Null, string> { Value = message });
+
+            await _foodProducts.UpdateOneAsync(
+                item => item.Id == product.Id && !item.ConfirmationRequestPublished,
+                Builders<FoodProduct>.Update.Set(item => item.ConfirmationRequestPublished, true));
+
+            ConfirmationMetrics.Record("request_published");
         }
         catch (ProduceException<Null, string> ex)
         {
-            Console.WriteLine($"Нее удалось отправить событие создания: {ex.Error.Reason}");
+            _logger.LogError(ex, "Не удалось доставить запрос подтверждения объекта {ObjectId}", product.Id);
+            throw;
         }
 
         return MapToResponseDto(product);
@@ -215,6 +216,7 @@ public class FoodProductService : IFoodProductService
         {
             Id = product.Id,
             Name = product.Name,
+            UserID = product.UserID,
             UserName = product.UserName,
             Status = product.Status,
             Calories = product.Calories,
@@ -228,8 +230,4 @@ public class FoodProductService : IFoodProductService
             ConfirmationTime = product.ConfirmationTime
         };
 
-    private sealed class UserServiceUser
-    {
-        public string Name { get; set; } = string.Empty;
-    }
 }

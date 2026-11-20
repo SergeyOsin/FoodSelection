@@ -10,6 +10,7 @@ namespace FoodSelection.Model
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public Guid UserID { get; set; }
         public string UserName { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public int Calories { get; set; }

@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Confluent.Kafka;
 using Xunit;
 
 namespace FoodSelectionApi.Test;
@@ -13,39 +12,26 @@ public class FoodSelectionAPITest
     {
         var composeFile = FindComposeFile();
         var composeDirectory = Path.GetDirectoryName(composeFile)!;
-        var apiUrl = Environment.GetEnvironmentVariable("API_GATEWAY_URL") ?? "http://localhost:7210/";
-        using var foodClient = new HttpClient { BaseAddress = new Uri(apiUrl) };
-        using var userClient = new HttpClient { BaseAddress = new Uri(apiUrl) };
-        var userPaused = false;
-        var foodPaused = false;
+        var foodUrl = Environment.GetEnvironmentVariable("FOOD_SERVICE_URL") ?? "http://localhost:7210/";
+        var userUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL") ?? "http://localhost:7211/";
+        using var foodClient = new HttpClient { BaseAddress = new Uri(foodUrl) };
+        using var userClient = new HttpClient { BaseAddress = new Uri(userUrl) };
+        var userStopped = false;
+        var foodStopped = false;
 
         try
         {
-            var anonymousResponse = await foodClient.GetAsync("api/FoodProduct");
-            Assert.Equal(System.Net.HttpStatusCode.Unauthorized, anonymousResponse.StatusCode);
-
-            var username = $"async-{Guid.NewGuid():N}";
-            var userResponse = await userClient.PostAsJsonAsync("api/auth/register", new
+            var userResponse = await userClient.PostAsJsonAsync("api/users", new
             {
-                Username = username,
-                Name = "Async confirmation test",
-                Password = "Test-password-123!"
+                Name = $"Lab-{Guid.NewGuid():N}"
             });
             userResponse.EnsureSuccessStatusCode();
             using var userJson = JsonDocument.Parse(await userResponse.Content.ReadAsStringAsync());
-            var userId = userJson.RootElement.GetProperty("userId").GetString()!;
-            var loginResponse = await userClient.PostAsJsonAsync("api/auth/login", new
-            {
-                Username = username,
-                Password = "Test-password-123!"
-            });
-            loginResponse.EnsureSuccessStatusCode();
-            using var loginJson = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync());
-            var accessToken = loginJson.RootElement.GetProperty("accessToken").GetString()!;
-            foodClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            userClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+            var userId = GetStringProperty(userJson.RootElement, "Id", "id");
+            Assert.Equal(0, await GetRegisteredObjectsAsync(userClient, userId));
+
+            await RunComposeAsync(composeDirectory, "stop", "user-service");
+            userStopped = true;
 
             var productResponse = await foodClient.PostAsJsonAsync("api/FoodProduct", new
             {
@@ -61,64 +47,42 @@ public class FoodSelectionAPITest
             });
             productResponse.EnsureSuccessStatusCode();
             using var productJson = JsonDocument.Parse(await productResponse.Content.ReadAsStringAsync());
-            var objectId = productJson.RootElement.TryGetProperty("Id", out var productId)
-                ? productId.GetString()!
-                : productJson.RootElement.GetProperty("id").GetString()!;
-            Assert.False(string.IsNullOrWhiteSpace(objectId));
+            var objectId = GetStringProperty(productJson.RootElement, "Id", "id");
+            Assert.Equal("Pending", GetStringProperty(productJson.RootElement, "Status", "status"));
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
-            var initialRegisteredObjects = await GetRegisteredObjectsAsync(userClient, userId);
-            await WaitForRegisteredObjectsAsync(userClient, userId, initialRegisteredObjects + 1);
-            initialRegisteredObjects = await GetRegisteredObjectsAsync(userClient, userId);
+            await RunComposeAsync(composeDirectory, "stop", "foodservice1");
+            foodStopped = true;
 
-            await RunComposeAsync(composeDirectory, "pause", "user-service");
-            userPaused = true;
-            await RunComposeAsync(composeDirectory, "pause", "foodservice1");
-            foodPaused = true;
+            await RunComposeAsync(composeDirectory, "start", "user-service");
+            userStopped = false;
+            await WaitForRegisteredObjectsAsync(userClient, userId, 1);
+            Assert.Equal(1, await GetRegisteredObjectsAsync(userClient, userId));
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
-            using var confirmationObserver = new ConsumerBuilder<Ignore, string>(new ConsumerConfig
-            {
-                BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092",
-                GroupId = $"confirmation-test-{Guid.NewGuid():N}",
-                AutoOffsetReset = AutoOffsetReset.Latest,
-                EnableAutoCommit = false
-            }).Build();
-            confirmationObserver.Subscribe("confirmation-topic");
-            confirmationObserver.Consume(TimeSpan.FromMilliseconds(250));
-
-            using var producer = new ProducerBuilder<Null, string>(new ProducerConfig
-            {
-                BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092"
-            }).Build();
-            await producer.ProduceAsync("object-created-topic", new Message<Null, string>
-            {
-                Value = JsonSerializer.Serialize(new { Id = objectId, UserID = userId })
-            });
-
-            await RunComposeAsync(composeDirectory, "unpause", "user-service");
-            userPaused = false;
-
-            var confirmation = WaitForConfirmation(confirmationObserver, objectId);
-            Assert.Equal(objectId, confirmation.ObjectId);
-            Assert.True(confirmation.ConfirmationTime > DateTimeOffset.UtcNow.AddMinutes(-2));
-            Assert.Equal(initialRegisteredObjects + 1, await GetRegisteredObjectsAsync(userClient, userId));
-
-            await RunComposeAsync(composeDirectory, "pause", "user-service");
-            userPaused = true;
-            await RunComposeAsync(composeDirectory, "unpause", "foodservice1");
-            foodPaused = false;
+            await RunComposeAsync(composeDirectory, "stop", "user-service");
+            userStopped = true;
+            await RunComposeAsync(composeDirectory, "start", "foodservice1");
+            foodStopped = false;
 
             var confirmedProduct = await WaitForConfirmedProductAsync(foodClient, objectId);
             Assert.Equal("Confirmed", confirmedProduct.GetProperty("Status").GetString());
             Assert.True(confirmedProduct.GetProperty("ConfirmationTime").GetDateTime() > DateTime.UtcNow.AddMinutes(-2));
+            await Task.Delay(TimeSpan.FromSeconds(6));
         }
         finally
         {
-            if (foodPaused)
-                await RunComposeAsync(composeDirectory, "unpause", "foodservice1");
-            if (userPaused)
-                await RunComposeAsync(composeDirectory, "unpause", "user-service");
+            if (foodStopped)
+                await RunComposeAsync(composeDirectory, "start", "foodservice1");
+            if (userStopped)
+                await RunComposeAsync(composeDirectory, "start", "user-service");
         }
     }
+
+    private static string GetStringProperty(JsonElement element, string firstName, string secondName) =>
+        element.TryGetProperty(firstName, out var first)
+            ? first.GetString()!
+            : element.GetProperty(secondName).GetString()!;
 
     private static async Task<int> GetRegisteredObjectsAsync(HttpClient client, string userId)
     {
@@ -133,33 +97,20 @@ public class FoodSelectionAPITest
         var timeout = DateTime.UtcNow.AddSeconds(30);
         while (DateTime.UtcNow < timeout)
         {
-            if (await GetRegisteredObjectsAsync(client, userId) >= minimum)
-                return;
+            try
+            {
+                if (await GetRegisteredObjectsAsync(client, userId) >= minimum)
+                    return;
+            }
+            catch (HttpRequestException)
+            {
+                // Compose start returns before ASP.NET is ready to accept requests.
+            }
+
             await Task.Delay(250);
         }
 
         throw new TimeoutException("UserService did not process the initial object-created event.");
-    }
-
-    private static ConfirmationMessage WaitForConfirmation(
-        IConsumer<Ignore, string> consumer,
-        string objectId)
-    {
-        var timeout = DateTime.UtcNow.AddSeconds(30);
-        while (DateTime.UtcNow < timeout)
-        {
-            var result = consumer.Consume(TimeSpan.FromMilliseconds(500));
-            if (result is null)
-                continue;
-
-            var confirmation = JsonSerializer.Deserialize<ConfirmationMessage>(
-                result.Message.Value,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (confirmation?.ObjectId == objectId)
-                return confirmation;
-        }
-
-        throw new TimeoutException("UserService did not publish the confirmation message.");
     }
 
     private static async Task<JsonElement> WaitForConfirmedProductAsync(HttpClient client, string objectId)
@@ -167,13 +118,20 @@ public class FoodSelectionAPITest
         var timeout = DateTime.UtcNow.AddSeconds(30);
         while (DateTime.UtcNow < timeout)
         {
-            var response = await client.GetAsync($"api/FoodProduct/{objectId}");
-            if (response.IsSuccessStatusCode)
+            try
             {
-                using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                var product = json.RootElement.Clone();
-                if (product.TryGetProperty("Status", out var status) && status.GetString() == "Confirmed")
-                    return product;
+                var response = await client.GetAsync($"api/FoodProduct/{objectId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                    var product = json.RootElement.Clone();
+                    if (product.TryGetProperty("Status", out var status) && status.GetString() == "Confirmed")
+                        return product;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // Compose start returns before ASP.NET is ready to accept requests.
             }
 
             await Task.Delay(250);
@@ -224,12 +182,6 @@ public class FoodSelectionAPITest
 
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"docker compose {string.Join(' ', arguments)} failed: {error}{output}");
-    }
-
-    private sealed class ConfirmationMessage
-    {
-        public string ObjectId { get; set; } = string.Empty;
-        public DateTimeOffset ConfirmationTime { get; set; }
     }
 }
 
